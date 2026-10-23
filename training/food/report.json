@@ -1,0 +1,88 @@
+{
+  "top1": 0.7589285714285714,
+  "top3": 0.9146428571428571,
+  "trainImages": 22198,
+  "testImages": 2800,
+  "perClassTop1": {
+    "Banh canh": 0.47,
+    "Hu tieu": 0.55,
+    "Bun bo Hue": 0.57,
+    "Pho": 0.59,
+    "Banh cuon": 0.63,
+    "Bun rieu": 0.65,
+    "Bun thit nuong": 0.67,
+    "Banh bot loc": 0.7,
+    "Mi quang": 0.71,
+    "Bun mam": 0.74,
+    "Banh tet": 0.75,
+    "Canh chua": 0.75,
+    "Cao lau": 0.77,
+    "Nem chua": 0.77,
+    "Banh chung": 0.79,
+    "Chao long": 0.79,
+    "Banh can": 0.8,
+    "Banh xeo": 0.8,
+    "Goi cuon": 0.81,
+    "Banh khot": 0.82,
+    "Com tam": 0.84,
+    "Banh beo": 0.85,
+    "Xoi xeo": 0.87,
+    "Banh trang nuong": 0.88,
+    "Banh gio": 0.89,
+    "Ca kho to": 0.9,
+    "Banh mi": 0.92,
+    "Bun dau mam tom": 0.97
+  },
+  "mostConfused": [
+    {
+      "that": "Pho",
+      "predicted": "Bun bo Hue",
+      "count": 12
+    },
+    {
+      "that": "Banh canh",
+      "predicted": "Hu tieu",
+      "count": 10
+    },
+    {
+      "that": "Bun rieu",
+      "predicted": "Bun bo Hue",
+      "count": 10
+    },
+    {
+      "that": "Banh chung",
+      "predicted": "Banh tet",
+      "count": 9
+    },
+    {
+      "that": "Banh tet",
+      "predicted": "Banh chung",
+      "count": 9
+    },
+    {
+      "that": "Hu tieu",
+      "predicted": "Pho",
+      "count": 9
+    },
+    {
+      "that": "Banh canh",
+      "predicted": "Bun mam",
+      "count": 8
+    },
+    {
+      "that": "Bun bo Hue",
+      "predicted": "Bun mam",
+      "count": 8
+    },
+    {
+      "that": "Banh bot loc",
+      "predicted": "Banh beo",
+      "count": 7
+    },
+    {
+      "that": "Banh can",
+      "predicted": "Banh khot",
+      "count": 7
+    }
+  ]
+}

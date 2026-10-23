@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Bản đang chia sẻ cho khách review (đóng băng, không bị build mới ghi đè)
+review-build
+
+# Runtime MediaPipe chép từ node_modules khi chạy dev/build
+public/mediapipe
+
+# Môi trường và model tải về khi huấn luyện
+training/food/.venv
+training/food/models/*.tflite
+training/food/cache
+
+# Người mẫu 3D và ảnh render tạm (dựng lại bằng tools/human)
+tools/human/*.blend*
+tools/human/out
+
+# Bản sao lưu mã cũ trước khi thiết kế lại
+_backup

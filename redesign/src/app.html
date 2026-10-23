@@ -1,0 +1,1523 @@
+<title>FitCoach Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+/* Bố cục: khung demo (danh sách màn · điện thoại · ghi chú). Ứng dụng: nền phấn, thẻ trắng, thẻ chính màu cao su đen.
+   Màu đĩa tạ thi đấu (đỏ, xanh dương, vàng, xanh lá) mã hoá mọi chỉ số và nhóm cơ. */
+:root {
+  --bg: #ECEEE9;
+  --surface: #FFFFFF;
+  --surface-2: #F3F4F0;
+  --ink: #14161A;
+  --ink-2: #585D57;
+  --ink-3: #8A8F89;
+  --line: #DDE0D9;
+  --hero: #14161A;
+  --hero-2: #26292E;
+  --on-hero: #F2F3EF;
+  --on-hero-2: #9DA29B;
+  --cta: #14161A;
+  --on-cta: #FFFFFF;
+  --red: #E4473A;
+  --blue: #2C6BEF;
+  --blue-2: #93B3F8;
+  --yellow: #F1B11A;
+  --green: #11A068;
+  --red-soft: #FBE2DE;
+  --blue-soft: #E0E9FD;
+  --yellow-soft: #FCEFD0;
+  --green-soft: #D9F1E6;
+  --red-ink: #B8291D;
+  --blue-ink: #1D4FC0;
+  --yellow-ink: #8A5E00;
+  --green-ink: #0A7A4F;
+  --shell: #D9DCD5;
+  --shell-panel: #E8EAE5;
+  --shell-ink: #14161A;
+  --shell-2: #5E635D;
+  --bezel: #0B0C0E;
+  --cam: #0C0D0F;
+  --cam-2: #1B1E22;
+  --cam-3: #2A2E33;
+  --cam-ink: #F2F3EF;
+  --cam-ink-2: #9DA29B;
+  --plate-rim: #FFFFFF;
+  --plate-in: #F6F6F2;
+  --f-ui: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --f-num: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D0E10; --surface: #17191C; --surface-2: #202327; --ink: #EFF0EC; --ink-2: #A4A9A2; --ink-3: #6E736D; --line: #2A2E33;
+    --hero: #22262B; --hero-2: #31353B; --cta: #EFF0EC; --on-cta: #14161A;
+    --red-soft: #3A1E1B; --blue-soft: #172440; --yellow-soft: #392D12; --green-soft: #0F2F20;
+    --red-ink: #FF8C80; --blue-ink: #95B6FF; --yellow-ink: #F6CB5E; --green-ink: #5DD6A0;
+    --shell: #060708; --shell-panel: #111316; --shell-ink: #EFF0EC; --shell-2: #8B908A; --bezel: #2A2D31;
+    --plate-rim: #2A2E33; --plate-in: #222529;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D0E10; --surface: #17191C; --surface-2: #202327; --ink: #EFF0EC; --ink-2: #A4A9A2; --ink-3: #6E736D; --line: #2A2E33;
+  --hero: #22262B; --hero-2: #31353B; --cta: #EFF0EC; --on-cta: #14161A;
+  --red-soft: #3A1E1B; --blue-soft: #172440; --yellow-soft: #392D12; --green-soft: #0F2F20;
+  --red-ink: #FF8C80; --blue-ink: #95B6FF; --yellow-ink: #F6CB5E; --green-ink: #5DD6A0;
+  --shell: #060708; --shell-panel: #111316; --shell-ink: #EFF0EC; --shell-2: #8B908A; --bezel: #2A2D31;
+  --plate-rim: #2A2E33; --plate-in: #222529;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--shell); color: var(--shell-ink); font-family: var(--f-ui);
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+p, h1, h2, h3, ol, ul { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+.ic { flex-shrink: 0; display: block; }
+
+/* ---------- Khung demo ---------- */
+.d-shell { display: grid; grid-template-columns: 236px minmax(0, 1fr) 272px; gap: 28px; max-width: 1340px; margin: 0 auto; padding-block: 24px; min-height: 100%; }
+.d-side { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; gap: 18px; max-height: calc(100vh - 48px); overflow-y: auto; scrollbar-width: thin; }
+.d-brand { display: flex; align-items: center; gap: 10px; }
+.d-brand b { font: 800 19px/1 var(--f-ui); letter-spacing: -.02em; }
+.d-brand small { display: block; font: 600 12px/1.2 var(--f-num); letter-spacing: .1em; text-transform: uppercase; color: var(--shell-2); margin-top: 3px; }
+.d-group h3 { font: 600 12px/1 var(--f-num); letter-spacing: .12em; text-transform: uppercase; color: var(--shell-2); margin: 0 0 6px 10px; }
+.d-group button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; border-radius: 10px; font-size: 14px; font-weight: 500; }
+.d-group button:hover { background: var(--shell-panel); }
+.d-group button.on { background: var(--shell-ink); color: var(--shell); }
+.d-group button .d-new { margin-left: auto; font: 700 11px/1 var(--f-num); letter-spacing: .08em; text-transform: uppercase; padding: 4px 6px; border-radius: 6px; background: var(--yellow); color: #14161A; }
+.d-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.d-theme { display: flex; padding: 4px; border-radius: 12px; background: var(--shell-panel); gap: 4px; }
+.d-theme button { flex: 1; padding: 7px 0; border-radius: 9px; font-size: 13px; font-weight: 600; text-align: center; color: var(--shell-2); }
+.d-theme button.on { background: var(--shell-ink); color: var(--shell); }
+.d-stage { display: flex; justify-content: center; align-items: flex-start; min-width: 0; }
+.d-phone-wrap { position: sticky; top: 24px; }
+.d-phone { width: 390px; height: 844px; border-radius: 56px; border: 11px solid var(--bezel); background: var(--bg); position: relative; overflow: hidden; box-shadow: 0 30px 60px -20px rgb(0 0 0 / .35), 0 0 0 1px rgb(0 0 0 / .2); transform-origin: top center; }
+.d-phone::after { content: ""; position: absolute; top: 10px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; z-index: 30; pointer-events: none; }
+.d-notes { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+.d-notes .d-kicker { font: 600 12px/1 var(--f-num); letter-spacing: .12em; text-transform: uppercase; color: var(--shell-2); }
+.d-notes h2 { font: 800 24px/1.15 var(--f-ui); letter-spacing: -.02em; text-wrap: balance; }
+.d-notes p { font-size: 14px; line-height: 1.55; color: var(--shell-2); }
+.d-notes ul { display: flex; flex-direction: column; gap: 8px; }
+.d-notes li { font-size: 14px; line-height: 1.45; padding-left: 16px; position: relative; }
+.d-notes li::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 2px; background: var(--shell-2); }
+.d-notes li.new::before { background: var(--yellow); }
+.d-card { background: var(--shell-panel); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.d-pager { display: flex; gap: 8px; }
+.d-pager button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 12px; background: var(--shell-panel); font-size: 13px; font-weight: 600; }
+.d-pager button:hover { background: var(--shell-ink); color: var(--shell); }
+.d-mobile-bar { display: none; }
+.d-guide { width: 100%; max-width: 1040px; }
+
+/* ---------- Ứng dụng ---------- */
+.app { position: absolute; inset: 0; color: var(--ink); font-size: 15px; line-height: 1.45; }
+.scr { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; scrollbar-width: none; }
+.scr::-webkit-scrollbar { display: none; }
+.scr.cam { background: var(--cam); color: var(--cam-ink); }
+.sb { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; height: 54px; padding: 6px 32px 0 40px; background: var(--bg); flex-shrink: 0; font: 600 16px/1 var(--f-ui); letter-spacing: -.01em; }
+.sb.clear { background: transparent; position: absolute; left: 0; right: 0; }
+.cam .sb { background: var(--cam); color: var(--cam-ink); }
+.sb-r { display: flex; gap: 6px; align-items: center; }
+.body { flex: 1; padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { justify-content: space-between; }
+.grow { flex: 1; min-width: 0; }
+.col { display: flex; flex-direction: column; }
+.lbl { font: 600 13px/1.1 var(--f-num); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+.num { font-family: var(--f-num); font-weight: 700; line-height: .9; letter-spacing: -.01em; }
+.h1 { font: 800 30px/1.1 var(--f-ui); letter-spacing: -.03em; }
+.h2 { font: 700 19px/1.25 var(--f-ui); letter-spacing: -.015em; }
+.h3 { font: 700 16px/1.3 var(--f-ui); letter-spacing: -.01em; }
+.muted { color: var(--ink-2); }
+.small { font-size: 13px; line-height: 1.4; }
+.xs { font-size: 12px; line-height: 1.35; }
+.card { background: var(--surface); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.card.tight { gap: 10px; }
+.card.hero { background: var(--hero); color: var(--on-hero); }
+.hero .lbl, .cam .lbl { color: var(--on-hero-2); }
+.hero .muted { color: var(--on-hero-2); }
+.btn { white-space: nowrap; height: 54px; border-radius: 999px; background: var(--cta); color: var(--on-cta); font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 22px; flex-shrink: 0; }
+.btn.sm { height: 44px; font-size: 14px; padding: 0 18px; }
+.btn.ghost { background: var(--surface-2); color: var(--ink); }
+.btn.line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn.light { background: var(--on-hero); color: #14161A; }
+.btn.on-dark { background: var(--hero-2); color: var(--on-hero); }
+.cam .btn.on-dark { background: var(--cam-3); color: var(--cam-ink); }
+.btn.wide { width: 100%; }
+.icon-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; position: relative; flex-shrink: 0; }
+.icon-btn.flat { background: var(--surface-2); }
+.cam .icon-btn, .icon-btn.glass { background: rgb(255 255 255 / .12); color: var(--cam-ink); }
+.icon-btn .dot { position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px var(--surface); }
+.avatar { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font: 700 17px/1 var(--f-num); letter-spacing: .02em; background: var(--yellow); color: #14161A; flex-shrink: 0; }
+.tag { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.tag.red { background: var(--red-soft); color: var(--red-ink); }
+.tag.blue { background: var(--blue-soft); color: var(--blue-ink); }
+.tag.yellow { background: var(--yellow-soft); color: var(--yellow-ink); }
+.tag.green { background: var(--green-soft); color: var(--green-ink); }
+.tag.on-hero { background: var(--hero-2); color: var(--on-hero); }
+.link { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.hero .link { color: var(--on-hero-2); }
+.sec { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; }
+.seg { display: flex; padding: 4px; border-radius: 999px; background: var(--surface); gap: 2px; }
+.seg button { flex: 1; height: 38px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--ink-2); text-align: center; white-space: nowrap; padding: 0 12px; }
+.seg button.on { background: var(--cta); color: var(--on-cta); }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; display: flex; }
+.bar > i { display: block; height: 100%; border-radius: 99px; }
+.hero .bar { background: var(--hero-2); }
+.divider { height: 1px; background: var(--line); }
+.plate { width: 7px; height: 20px; border-radius: 2.5px; flex-shrink: 0; }
+.chev { color: var(--ink-3); }
+.hscroll { display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 0 20px; scrollbar-width: none; }
+.hscroll::-webkit-scrollbar { display: none; }
+
+/* Thanh điều hướng dưới */
+.nav { position: sticky; bottom: 0; z-index: 10; margin-top: auto; background: var(--surface); border-top: 1px solid var(--line); padding: 8px 10px 30px; display: grid; grid-template-columns: repeat(5, 1fr); align-items: start; flex-shrink: 0; }
+.nav button { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--ink-3); padding-top: 4px; }
+.nav button.on { color: var(--ink); }
+.nav .fab { width: 56px; height: 56px; border-radius: 50%; background: var(--cta); color: var(--on-cta); display: grid; place-items: center; justify-self: center; margin-top: -24px; padding: 0; box-shadow: 0 0 0 6px var(--surface); }
+.home-ind { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--ink); }
+.cam .home-ind, .home-ind.light { background: var(--cam-ink); }
+.cam .home-ind.dark { background: var(--ink); }
+.actionbar { position: sticky; bottom: 0; z-index: 10; margin-top: auto; padding: 12px 20px 34px; background: var(--bg); display: flex; gap: 10px; flex-shrink: 0; }
+.cam .actionbar { background: var(--cam); }
+
+/* Trang chủ */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.day { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 0 8px; border-radius: 16px; }
+.day .wd { font: 600 12px/1 var(--f-num); letter-spacing: .06em; color: var(--ink-3); }
+.day .dn { font: 700 18px/1 var(--f-num); }
+.day .pip { width: 14px; height: 4px; border-radius: 2px; background: var(--line); }
+.day.today { background: var(--cta); color: var(--on-cta); }
+.day.today .wd { color: var(--on-cta); opacity: .7; }
+.hero-mid { display: flex; align-items: center; gap: 4px; }
+.hero-pct { width: 96px; flex-shrink: 0; }
+.hero-pct .big { font-size: 68px; }
+.hero-pct .pct { font-size: 30px; color: var(--on-hero-2); }
+.legend4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.legend4 .lg { display: flex; flex-direction: column; gap: 3px; }
+.lg .num { font-size: 24px; }
+.lg .of { font-size: 12px; color: var(--on-hero-2); }
+.lg .nm { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--on-hero-2); }
+.lg .nm i { width: 6px; height: 12px; border-radius: 2px; }
+.hint { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 10px 12px; border-radius: 14px; background: var(--hero-2); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { background: var(--surface); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-height: 150px; }
+.tile .num { font-size: 32px; }
+.tile .num small { font-size: 16px; color: var(--ink-2); font-weight: 600; margin-left: 2px; }
+.tile-h { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.tile-h .ib { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; }
+.glasses { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin-top: auto; }
+.glasses i { height: 18px; border-radius: 3px 3px 5px 5px; background: var(--surface-2); }
+.glasses i.on { background: var(--blue); }
+.mini-btn { height: 30px; border-radius: 99px; padding: 0 10px; font-size: 12px; font-weight: 600; background: var(--blue-soft); color: var(--blue-ink); display: inline-flex; align-items: center; gap: 4px; }
+.macro { display: grid; grid-template-columns: 74px 1fr 64px; align-items: center; gap: 10px; font-size: 13px; }
+.macro b { font-weight: 600; }
+.macro span:last-child { text-align: right; color: var(--ink-2); }
+.next-meal { display: flex; align-items: center; gap: 12px; }
+.tip { background: var(--green-soft); border-radius: 22px; padding: 16px; display: flex; gap: 12px; }
+.tip .ib { width: 36px; height: 36px; border-radius: 12px; background: var(--green); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.mini-plates { display: flex; gap: 4px; align-items: center; }
+.mini-plates i { width: 9px; height: 26px; border-radius: 3px; }
+.mini-plates i.off { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* Tập luyện */
+.wk-days { display: flex; gap: 8px; }
+.wk-day { flex: 1; min-width: 0; border-radius: 16px; padding: 10px 0 9px; background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wk-day .wd { font: 600 12px/1 var(--f-num); letter-spacing: .06em; color: var(--ink-3); }
+.wk-day .dn { font: 700 17px/1 var(--f-num); }
+.wk-day .pl { width: 18px; height: 5px; border-radius: 3px; }
+.wk-day.rest { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+.wk-day.today { background: var(--cta); color: var(--on-cta); }
+.wk-day.today .wd { color: var(--on-cta); opacity: .7; }
+.wk-day .ck { width: 16px; height: 16px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.part { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.part .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 15px/1 var(--f-num); background: var(--surface); flex-shrink: 0; }
+.part .n.done { background: var(--green); color: #fff; }
+.phase { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 22px; }
+.phase .pi { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; background: var(--surface); color: var(--ink); }
+.phase .pi.done { background: var(--green); color: #fff; }
+.ex-list { display: flex; flex-direction: column; gap: 8px; }
+.ex { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: 22px; padding: 10px 12px 10px 10px; }
+.ex-main { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.thumb { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; }
+.ex-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ex-txt b { font-weight: 600; font-size: 15px; }
+.ex.done .ex-txt b { color: var(--ink-3); text-decoration: line-through; }
+.ex-amt { font: 700 16px/1.1 var(--f-num); letter-spacing: .01em; }
+.ex-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12px; color: var(--ink-2); }
+.mtag { display: inline-flex; align-items: center; gap: 4px; }
+.mtag i { width: 5px; height: 11px; border-radius: 1.5px; }
+.ai { display: inline-flex; align-items: center; gap: 3px; font-weight: 600; color: var(--blue-ink); }
+.chk { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--line); flex-shrink: 0; color: transparent; }
+.ex.done .chk { background: var(--green); box-shadow: none; color: #fff; }
+
+/* Chi tiết bài tập */
+.visual { position: relative; border-radius: 28px; height: 300px; display: grid; place-items: center; overflow: hidden; }
+.visual .tl { position: absolute; top: 14px; left: 14px; }
+.visual .tr { position: absolute; top: 14px; right: 14px; }
+.visual .br { position: absolute; bottom: 14px; right: 14px; }
+.visual .bl { position: absolute; bottom: 14px; left: 14px; }
+.pill { height: 38px; padding: 0 14px; border-radius: 99px; background: var(--surface); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.stat4 { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-radius: 22px; padding: 14px 6px; }
+.stat4 > div { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.stat4 > div + div { box-shadow: -1px 0 0 var(--line); }
+.stat4 .num { font-size: 28px; }
+.stat4 span:last-child { font-size: 12px; color: var(--ink-2); }
+.mbar { display: grid; grid-template-columns: 92px 1fr 40px; align-items: center; gap: 10px; font-size: 14px; }
+.mbar span:last-child { text-align: right; font: 600 14px/1 var(--f-num); color: var(--ink-2); }
+.steps { display: flex; flex-direction: column; gap: 12px; }
+.steps li { display: flex; gap: 12px; font-size: 15px; }
+.steps .sn { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 700 14px/1 var(--f-num); background: var(--surface-2); flex-shrink: 0; }
+.warn li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.warn .ic { color: var(--red); margin-top: 2px; }
+
+/* Đang tập, camera */
+.segs { display: flex; gap: 4px; }
+.segs i { flex: 1; height: 4px; border-radius: 2px; background: var(--cam-3); }
+.segs i.on { background: var(--cam-ink); }
+.segs i.half { background: linear-gradient(90deg, var(--cam-ink) 0%, var(--cam-ink) 50%, var(--cam-3) 50%, var(--cam-3) 100%); }
+.stage-panel { border-radius: 28px; background: var(--cam-2); height: 250px; display: grid; place-items: center; position: relative; overflow: hidden; }
+.counter { display: flex; align-items: flex-end; justify-content: center; gap: 8px; }
+.counter .num { font-size: 120px; line-height: .8; }
+.counter .of { font: 600 30px/1 var(--f-num); color: var(--cam-ink-2); padding-bottom: 6px; }
+.cue { background: var(--cam-2); border-radius: 20px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+.ctrl { display: flex; align-items: center; gap: 12px; }
+.ctrl .round { width: 58px; height: 58px; border-radius: 50%; background: var(--cam-3); display: grid; place-items: center; flex-shrink: 0; }
+.ctrl .btn { flex: 1; height: 58px; background: var(--cam-ink); color: #14161A; font-size: 17px; }
+.next { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--cam-3); }
+.camview { position: relative; height: 560px; margin: 0 0 -28px; overflow: hidden; background: linear-gradient(180deg, #23272C 0%, #191C20 62%, #121417 100%); }
+.cam-top { position: absolute; top: 58px; left: 16px; right: 16px; display: flex; align-items: center; gap: 10px; }
+.cam-title { flex: 1; text-align: center; }
+.angles { position: absolute; right: 14px; top: 130px; display: flex; flex-direction: column; gap: 8px; }
+.angle { background: rgb(12 13 15 / .72); border-radius: 14px; padding: 8px 12px; min-width: 84px; }
+.angle .num { font-size: 26px; }
+.angle.good .num { color: #4BDB9A; }
+.angle.warn .num { color: #FFC34A; }
+.fb { position: absolute; left: 16px; right: 16px; bottom: 44px; border-radius: 18px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; background: var(--green); color: #fff; font-weight: 600; font-size: 15px; }
+.sheet { position: relative; z-index: 2; background: var(--bg); color: var(--ink); border-radius: 30px 30px 0 0; padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.handle { width: 40px; height: 5px; border-radius: 3px; background: var(--line); align-self: center; }
+.score { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.score > div { background: var(--surface); border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.score .num { font-size: 26px; }
+
+/* Bữa ăn */
+.kcal-big { display: flex; align-items: flex-end; gap: 8px; }
+.kcal-big .num { font-size: 64px; }
+.kcal-big span:not(.num) { font-size: 14px; color: var(--ink-2); padding-bottom: 6px; }
+.formula { display: flex; gap: 6px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.formula b { color: var(--ink); font-weight: 600; }
+.meal { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.meal + .meal { border-top: 1px solid var(--line); }
+.meal .when { width: 58px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+.meal .when b { font-size: 14px; font-weight: 600; }
+.meal .when span { font: 600 13px/1 var(--f-num); color: var(--ink-3); letter-spacing: .03em; }
+.meal .dish { width: 46px; height: 46px; flex-shrink: 0; }
+.meal .empty { width: 46px; height: 46px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); display: grid; place-items: center; color: var(--ink-3); flex-shrink: 0; }
+.food { width: 176px; flex-shrink: 0; background: var(--surface); border-radius: 22px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.food .pic { height: 120px; border-radius: 16px; display: grid; place-items: center; width: 100%; }
+.food .pw { position: relative; }
+.food .pw .add { position: absolute; right: 8px; bottom: 8px; }
+.food .add { width: 36px; height: 36px; border-radius: 50%; background: var(--cta); color: var(--on-cta); display: grid; place-items: center; flex-shrink: 0; }
+.food .add.done { background: var(--green); color: #fff; }
+.glass-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.glass { height: 44px; border-radius: 6px 6px 12px 12px; background: var(--surface-2); display: grid; place-items: end center; padding-bottom: 6px; color: var(--ink-3); }
+.glass.on { background: var(--blue); color: #fff; }
+.ingr li { display: flex; justify-content: space-between; padding: 11px 0; font-size: 15px; }
+.ingr li + li { border-top: 1px solid var(--line); }
+.ingr li span:last-child { color: var(--ink-2); font: 600 15px/1.3 var(--f-num); letter-spacing: .02em; }
+.stack { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 3px; }
+.stack i { display: block; height: 100%; border-radius: 3px; }
+.stack-lg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stack-lg > div { display: flex; flex-direction: column; gap: 4px; }
+.stack-lg .num { font-size: 26px; }
+.stack-lg .nm { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-2); }
+.stack-lg .nm i { width: 6px; height: 12px; border-radius: 2px; }
+
+/* Tiến độ */
+.stat3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat3 > div { background: var(--surface); border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.stat3 .num { font-size: 34px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .wd { text-align: center; font: 600 12px/1 var(--f-num); letter-spacing: .06em; color: var(--ink-3); padding-bottom: 4px; }
+.cal .c { height: 38px; border-radius: 11px; display: grid; place-items: center; font: 600 15px/1 var(--f-num); color: var(--ink-3); }
+.cal .c.rest { background: var(--surface-2); }
+.cal .c.tr { color: #fff; }
+.cal .c.now { box-shadow: inset 0 0 0 2px var(--red); color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; }
+.meas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.meas > div { background: var(--surface-2); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.meas .num { font-size: 26px; }
+.delta { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: var(--green-ink); }
+.pr { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.pr + .pr { border-top: 1px solid var(--line); }
+
+/* Sức khỏe, thử thách, hồ sơ */
+.factors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.factors > div { background: var(--hero-2); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+.factors b { font-size: 14px; font-weight: 600; }
+.chipset { display: flex; gap: 8px; flex-wrap: wrap; }
+.choice { height: 40px; padding: 0 16px; border-radius: 99px; background: var(--surface-2); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; }
+.choice.on { background: var(--cta); color: var(--on-cta); }
+.hero .choice { background: var(--hero-2); color: var(--on-hero); }
+.hero .choice.on { background: var(--on-hero); color: #14161A; }
+.toggle { width: 46px; height: 28px; border-radius: 14px; background: var(--line); position: relative; flex-shrink: 0; }
+.toggle i { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: left .2s; }
+.toggle.on { background: var(--green); }
+.toggle.on i { left: 21px; }
+.lrow { display: flex; align-items: center; gap: 12px; padding: 13px 0; }
+.lrow + .lrow { border-top: 1px solid var(--line); }
+.lrow .li { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--surface-2); flex-shrink: 0; }
+.lrow .v { font-size: 13px; color: var(--ink-2); text-align: right; }
+.list-card { background: var(--surface); border-radius: 24px; padding: 4px 16px; }
+.rank { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.rank + .rank { border-top: 1px solid var(--line); }
+.rank .rn { width: 18px; font: 700 18px/1 var(--f-num); color: var(--ink-3); text-align: center; }
+.rank.me { background: var(--surface-2); margin: 0 -10px; padding: 10px; border-radius: 16px; border-top-color: transparent; }
+.rank.me + .rank { border-top-color: transparent; }
+.av-sm { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 700 14px/1 var(--f-num); color: #14161A; flex-shrink: 0; }
+.badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.badge { background: var(--surface); border-radius: 20px; padding: 14px 8px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; font-size: 12px; font-weight: 600; line-height: 1.3; }
+.badge.lock { color: var(--ink-3); }
+.pips { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; }
+.pips i { height: 16px; border-radius: 3px; background: var(--hero-2); }
+.pips i.on { background: var(--green); }
+.pips i.now { background: transparent; box-shadow: inset 0 0 0 1.5px var(--green); }
+.ch-card { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: 22px; padding: 12px; }
+.ch-ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; }
+.prof { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 6px 0 4px; }
+.prof .avatar { width: 84px; height: 84px; font-size: 30px; }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-radius: 22px; padding: 14px 4px; }
+.stat-row > div { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.stat-row > div + div { box-shadow: -1px 0 0 var(--line); }
+.stat-row .num { font-size: 24px; }
+.stat-row span:last-child { font-size: 12px; color: var(--ink-2); }
+.opt { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 22px; padding: 14px; box-shadow: inset 0 0 0 2px transparent; }
+.opt.on { box-shadow: inset 0 0 0 2px var(--ink); }
+.opt .radio { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--line); flex-shrink: 0; display: grid; place-items: center; }
+.opt.on .radio { box-shadow: none; background: var(--ink); color: var(--bg); }
+.stepper { display: flex; align-items: center; gap: 14px; }
+.stepper button { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; }
+.progress7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.progress7 i { height: 5px; border-radius: 3px; background: var(--line); }
+.progress7 i.on { background: var(--ink); }
+.feat { display: flex; gap: 14px; align-items: flex-start; }
+.feat .fi { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; flex-shrink: 0; }
+
+/* Lớp phủ trong máy */
+.overlay { position: absolute; inset: 0; z-index: 40; background: rgb(10 11 12 / .45); display: flex; align-items: flex-end; }
+.overlay[hidden] { display: none; }
+.ov-sheet { width: 100%; background: var(--bg); border-radius: 30px 30px 0 0; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 10px; color: var(--ink); }
+.ov-item { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 20px; padding: 14px; text-align: left; width: 100%; }
+.toast { position: absolute; left: 20px; right: 20px; bottom: 112px; z-index: 45; background: var(--cta); color: var(--on-cta); border-radius: 16px; padding: 12px 16px; font-size: 14px; font-weight: 600; display: flex; gap: 10px; align-items: center; }
+.toast[hidden] { display: none; }
+
+/* Hệ thống thiết kế */
+.g-wrap { background: var(--bg); color: var(--ink); border-radius: 28px; padding: 40px; display: flex; flex-direction: column; gap: 36px; }
+.g-sec { display: flex; flex-direction: column; gap: 16px; }
+.g-sec > .lbl { font-size: 14px; }
+.g-sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.g-sw > div { background: var(--surface); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+.g-sw > div > i { height: 72px; display: block; }
+.g-sw > div > p { padding: 10px 12px 12px; font-size: 13px; line-height: 1.35; }
+.g-sw b { display: block; font-weight: 600; }
+.g-sw span { font: 600 13px/1 var(--f-num); letter-spacing: .04em; color: var(--ink-2); }
+.g-type { display: flex; flex-direction: column; gap: 14px; background: var(--surface); border-radius: 22px; padding: 22px; }
+.g-type > div { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: baseline; }
+.g-type > div + div { border-top: 1px solid var(--line); padding-top: 14px; }
+.g-comp { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.g-box { background: var(--surface-2); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.g-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.g-icons > div { background: var(--surface); border-radius: 14px; padding: 14px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-2); }
+
+/* Chế độ xuất SVG: mọi màn hiện ra, xếp dọc, không hiệu ứng */
+.exp .d-shell, .exp .d-mobile-bar { display: none; }
+#export { display: none; }
+.exp #export { display: flex; flex-direction: column; gap: 60px; align-items: flex-start; padding: 40px; }
+.exp body, body.exp { background: #888; }
+.exp .app, .exp .scr { position: relative; inset: auto; }
+.exp .scr { width: 390px; min-height: 844px; overflow: visible; }
+.exp .sb, .exp .nav, .exp .actionbar { position: relative; }
+.exp .sb.clear { position: absolute; }
+.exp *, .exp *::before, .exp *::after { animation: none !important; transition: none !important; }
+.exp .d-guide { width: 1100px; max-width: none; }
+
+@keyframes rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.anim-plate { transform-box: fill-box; transform-origin: 50% 100%; animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.pop { animation: pop .35s cubic-bezier(.2, .9, .3, 1.3) both; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Màn hẹp: bỏ khung, ứng dụng chiếm toàn màn hình */
+@media (max-width: 1180px) {
+  .d-shell { grid-template-columns: 220px minmax(0, 1fr); }
+  .d-notes { display: none; }
+}
+@media (max-width: 760px) {
+  body { padding-left: 0; padding-right: 0; background: var(--bg); }
+  .d-shell { display: block; padding: 0; }
+  .d-side { display: none; }
+  .d-phone-wrap { position: static; width: 100%; }
+  .d-phone { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; transform: none !important; }
+  .d-phone::after { display: none; }
+  .d-stage { display: block; }
+  .sb { visibility: hidden; height: calc(46px + env(safe-area-inset-top, 0px)); }
+  .scr { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+  .d-mobile-bar { display: flex; position: fixed; z-index: 60; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); }
+  .d-mobile-bar button { height: 32px; padding: 0 14px; border-radius: 99px; background: var(--cta); color: var(--on-cta); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .d-guide { padding: 16px; }
+  .g-wrap { padding: 20px; }
+  .g-type > div { grid-template-columns: 1fr; gap: 6px; }
+}
+.d-sheet { position: fixed; inset: 0; z-index: 70; background: rgb(0 0 0 / .5); display: flex; align-items: flex-end; }
+.d-sheet[hidden] { display: none; }
+.d-sheet > div { width: 100%; max-height: 80vh; overflow-y: auto; background: var(--shell); color: var(--shell-ink); border-radius: 24px 24px 0 0; padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+</style>
+
+<div class="d-shell">
+  <aside class="d-side" aria-label="Danh sách màn hình">
+    <div class="d-brand">
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="11" fill="var(--shell-ink)"/><rect x="5" y="16.5" width="26" height="3" rx="1.5" fill="var(--shell)"/><rect x="9" y="9" width="4.5" height="18" rx="1.6" fill="#E4473A"/><rect x="14.5" y="11.5" width="3.5" height="13" rx="1.4" fill="#2C6BEF"/><rect x="22.5" y="9" width="4.5" height="18" rx="1.6" fill="#F1B11A"/><rect x="18" y="11.5" width="3.5" height="13" rx="1.4" fill="#11A068" opacity="0"/></svg>
+      <div><b>FitCoach</b><small>Bản thiết kế mới</small></div>
+    </div>
+    <nav id="d-list"></nav>
+    <div class="d-group">
+      <h3>Giao diện</h3>
+      <div class="d-theme" role="group" aria-label="Giao diện">
+        <button data-theme-set="light">Sáng</button><button data-theme-set="auto">Hệ thống</button><button data-theme-set="dark">Tối</button>
+      </div>
+    </div>
+  </aside>
+  <main class="d-stage" id="d-stage">
+    <div class="d-phone-wrap" id="d-phone-wrap"><div class="d-phone" id="d-phone"><div class="app" id="app"></div></div></div>
+    <div class="d-guide" id="d-guide" hidden></div>
+  </main>
+  <aside class="d-notes" id="d-notes" aria-live="polite"></aside>
+</div>
+<div class="d-mobile-bar"><button id="d-mobile-open"><span id="d-mobile-name">Trang chủ</span><svg data-i="chevron-right" width="14" height="14"></svg></button></div>
+<div class="d-sheet" id="d-sheet" hidden><div><div class="row between"><b>Chọn màn hình</b><button id="d-sheet-close" aria-label="Đóng"><svg data-i="x" width="20" height="20"></svg></button></div><nav id="d-list-m"></nav></div></div>
+<div id="export"></div>
+
+<script>
+const ICONS = /*ICONS*/{};
+const EXPORT = /[?&]export\b/.test(location.search);
+
+const ic = (n, s = 20, sw = 2) =>
+  `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+const vn = (n, d = 0) => n.toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
+const money = (n) => vn(n) + 'đ';
+const C = { red: 'var(--red)', blue: 'var(--blue)', yellow: 'var(--yellow)', green: 'var(--green)' };
+const GROUP = {
+  legs: { name: 'Chân & mông', c: 'red' },
+  upper: { name: 'Thân trên', c: 'blue' },
+  core: { name: 'Bụng', c: 'yellow' },
+  full: { name: 'Toàn thân', c: 'green' },
+};
+
+// ---------- Dữ liệu mẫu ----------
+const S = {
+  water: 5,
+  done: new Set(['squat', 'lunge']),
+  added: new Set(),
+  mood: 2,
+  rpe: 1,
+  goal: 'lose',
+  target: 58,
+  portion: 1,
+  reps: 8,
+  set: 2,
+  coachReps: 7,
+  remind: true,
+  waterRemind: true,
+};
+const SESSION = [
+  { id: 'squat', name: 'Squat', sets: 3, amt: '15 lần', rest: 60, g: 'legs', pose: 'squat', ai: true },
+  { id: 'lunge', name: 'Lunge', sets: 3, amt: '10 lần/bên', rest: 60, g: 'legs', pose: 'lunge', ai: true },
+  { id: 'hip', name: 'Hip thrust trên ghế', sets: 4, amt: '12 lần', rest: 75, g: 'legs', pose: 'hipthrust' },
+  { id: 'rdl', name: 'Romanian deadlift tạ đơn', sets: 3, amt: '12 lần', rest: 75, g: 'legs', pose: 'rdl' },
+  { id: 'step', name: 'Bước lên ghế', sets: 3, amt: '10 lần/bên', rest: 60, g: 'legs', pose: 'stepup' },
+  { id: 'plank', name: 'Plank', sets: 3, amt: '40 giây', rest: 45, g: 'core', pose: 'plank', ai: true },
+];
+const WEEK = [
+  { wd: 'T2', d: 19, g: 'full', done: true, t: 'Toàn thân' },
+  { wd: 'T3', d: 20 },
+  { wd: 'T4', d: 21, g: 'upper', done: true, t: 'Thân trên' },
+  { wd: 'T5', d: 22, g: 'legs', today: true, t: 'Thân dưới' },
+  { wd: 'T6', d: 23 },
+  { wd: 'T7', d: 24, g: 'core', t: 'Bụng' },
+  { wd: 'CN', d: 25 },
+];
+const DISHES = {
+  oats: { name: 'Yến mạch, trứng, chuối', kcal: 480, p: 24, price: 20000 },
+  comga: { name: 'Cơm gà luộc', kcal: 520, p: 35, price: 35000 },
+  milk: { name: 'Hộp sữa tươi không đường', kcal: 120, p: 6, price: 8000 },
+  canhchua: { name: 'Canh cá nấu chua, cơm gạo lứt', kcal: 450, p: 32, price: 45000, tag: ['Nhiều đạm', 'green'], time: 25 },
+  salad: { name: 'Salad ức gà sốt mè rang', kcal: 420, p: 34, price: 40000, tag: ['Ít tinh bột', 'blue'], time: 15 },
+  dauhu: { name: 'Đậu hũ sốt cà chua, cơm gạo lứt', kcal: 390, p: 20, price: 30000, tag: ['Rẻ nhất', 'yellow'], time: 20 },
+  gaapchao: { name: 'Cơm gạo lứt, ức gà áp chảo', kcal: 560, p: 45, price: 45000, tag: ['Sau buổi tập', 'red'], time: 20 },
+  pho: { name: 'Phở bò tái', kcal: 450, p: 28, price: 50000 },
+};
+const metrics = () => [
+  { nm: 'Calo đốt', v: 412, t: 600, show: '412', of: '/600 kcal', c: 'red' },
+  { nm: 'Bước', v: 6842, t: 8000, show: '6.842', of: '/8.000', c: 'green' },
+  { nm: 'Phút tập', v: 24, t: 45, show: '24', of: '/45 phút', c: 'yellow' },
+  { nm: 'Nước', v: S.water * .25, t: 2, show: vn(S.water * .25, 2).replace(/,?0+$/, '').replace(/,$/, ''), of: '/2 lít', c: 'blue' },
+];
+
+// ---------- Hình vẽ ----------
+// Thanh đòn nhìn ngang: mỗi đĩa là một chỉ số, phần màu đậm dâng lên theo % hoàn thành
+let uid = 0;
+function barbell(plates, o = {}) {
+  const W = o.w ?? 210, H = o.h ?? 130, pw = o.pw ?? 28, gap = o.gap ?? 5, ph = o.ph ?? 118;
+  const cy = H / 2, sleeveEnd = 14, n = plates.length;
+  const x0 = W - sleeveEnd - n * (pw + gap) + gap;
+  const shaft = o.shaft ?? 'var(--on-hero-2)';
+  const empty = o.empty ?? 'var(--hero-2)';
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">`;
+  s += `<rect x="0" y="${cy - 3.5}" width="${x0 - 12}" height="7" rx="3.5" fill="${shaft}" opacity="0.55"/>`;
+  s += `<rect x="${x0 - 16}" y="${cy - 13}" width="10" height="26" rx="3" fill="${shaft}"/>`;
+  s += `<rect x="${x0 - 8}" y="${cy - 7}" width="${W - x0 + 8}" height="14" rx="5" fill="${shaft}" opacity="0.8"/>`;
+  plates.forEach((p, i) => {
+    const x = x0 + i * (pw + gap), y = cy - ph / 2;
+    const pct = Math.max(0, Math.min(1, p.pct));
+    if (p.outline) {
+      s += `<rect x="${x + 1}" y="${y + 1}" width="${pw - 2}" height="${ph - 2}" rx="6" fill="none" stroke="${empty}" stroke-width="2" stroke-dasharray="4 4"/>`;
+      return;
+    }
+    s += `<rect x="${x}" y="${y}" width="${pw}" height="${ph}" rx="6" fill="${C[p.c]}" fill-opacity="0.22"/>`;
+    if (pct > 0) {
+      const fh = Math.max(12, ph * pct);
+      s += `<rect class="${o.anim ? 'anim-plate' : ''}" style="animation-delay:${i * 90}ms" x="${x}" y="${y + ph - fh}" width="${pw}" height="${fh}" rx="6" fill="${C[p.c]}"/>`;
+    }
+    s += `<rect x="${x + pw / 2 - 1}" y="${y + 10}" width="2" height="${ph - 20}" rx="1" fill="#000" opacity="0.1"/>`;
+  });
+  return s + '</svg>';
+}
+
+const POSES = {
+  squat: { head: [26, 10], lines: ['M17 28 L24 15.5', 'M17 28 L29 28 L27 40 L33 40', 'M24 17 L36 19.5'] },
+  lunge: { head: [24, 8.5], lines: ['M24 26 L24 13.5', 'M24 26 L32 32 L32 41 L36 41', 'M24 26 L17 39 L10 38', 'M24 15 L20 21 L23 25'] },
+  hipthrust: { head: [8.5, 21.5], props: '<path d="M3 27 H16 M5 27 V41 M14 27 V41" stroke-width="2.4"/>', lines: ['M13 24 L26 21.5 L34 24 L33 40 L37 40', 'M14 24 L22 22.5'] },
+  rdl: { head: [36, 13], lines: ['M20 24 L32 17', 'M20 24 L23 33 L22 41 L26 41', 'M31 18 L31 30'], fills: '<rect x="27.5" y="29.5" width="7" height="3.4" rx="1.2"/>' },
+  stepup: { head: [24, 7.5], props: '<rect x="28" y="32" width="14" height="9" rx="1.5" stroke-width="2.4"/>', lines: ['M24 24 L24.5 12.5', 'M24 24 L32 25.5 L32 32 L36 32', 'M24 24 L21 32.5 L19 41 L22 41', 'M24.5 14 L28.5 21', 'M24.5 14 L20 20'] },
+  plank: { head: [37, 22.5], lines: ['M8 33 L20 29.5 L32 26.5', 'M32 26.5 L31 34 L38 34'] },
+  warmup: { head: [24, 9.5], lines: ['M24 15 L24 28', 'M24 28 L19.5 41 M24 28 L28.5 41', 'M24 17 L17.5 6.5 M24 17 L30.5 6.5'] },
+  cooldown: { head: [32, 23.5], lines: ['M14 37 L38 38 L38.5 33', 'M14 37 L28 27', 'M27.5 28 L37 34.5'] },
+};
+function pose(name, size = 44, color = 'var(--ink)', floor = true) {
+  const p = POSES[name];
+  return `<svg width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true">` +
+    (floor ? `<path d="M3 42.5 H45" stroke="${color}" stroke-width="1.6" stroke-linecap="round" opacity="0.25"/>` : '') +
+    (p.props ? `<g fill="none" stroke="${color}" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">${p.props}</g>` : '') +
+    `<g fill="none" stroke="${color}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">${p.lines.map((d) => `<path d="${d}"/>`).join('')}</g>` +
+    (p.fills ? `<g fill="${color}">${p.fills}</g>` : '') +
+    `<circle cx="${p.head[0]}" cy="${p.head[1]}" r="4.4" fill="${color}"/></svg>`;
+}
+
+// Món ăn nhìn từ trên xuống, vẽ bằng hình khối đơn giản
+function rnd(seed) { let s = seed; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
+function dish(kind, size = 100) {
+  const r = rnd(kind.length * 31 + 7);
+  let s = `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true">`;
+  const plate = (inner = '#F6F5F0') => `<circle cx="50" cy="50" r="47" fill="#FFFFFF" stroke="#E2E4DE" stroke-width="1.5"/><circle cx="50" cy="50" r="37" fill="${inner}"/>`;
+  const bowl = (broth, rim = '#F3EFE7') => `<circle cx="50" cy="50" r="47" fill="${rim}" stroke="#DCD6CA" stroke-width="1.5"/><circle cx="50" cy="50" r="46" fill="none" stroke="#3E6FB0" stroke-width="1.6" stroke-dasharray="2 3" opacity="0.55"/><circle cx="50" cy="50" r="38" fill="${broth}"/>`;
+  const herbs = (n, cx = 50, cy = 50, rad = 30, col = '#3F9D49') => { let h = ''; for (let i = 0; i < n; i++) { const a = r() * 6.28, d = r() * rad; h += `<ellipse cx="${(cx + Math.cos(a) * d).toFixed(1)}" cy="${(cy + Math.sin(a) * d).toFixed(1)}" rx="2.6" ry="1.5" transform="rotate(${(r() * 180).toFixed(0)} ${(cx + Math.cos(a) * d).toFixed(1)} ${(cy + Math.sin(a) * d).toFixed(1)})" fill="${col}"/>`; } return h; };
+  if (kind === 'oats') {
+    s += bowl('#E8D6B0');
+    for (let i = 0; i < 26; i++) s += `<circle cx="${(22 + r() * 56).toFixed(1)}" cy="${(22 + r() * 56).toFixed(1)}" r="${(1 + r() * 1.4).toFixed(1)}" fill="#D3BC8E"/>`;
+    [[38, 36], [50, 31], [62, 37]].forEach(([x, y]) => s += `<circle cx="${x}" cy="${y}" r="7" fill="#F7E68C" stroke="#E7C94F" stroke-width="1.2"/><circle cx="${x}" cy="${y}" r="1.4" fill="#D8B54A"/>`);
+    s += `<ellipse cx="54" cy="62" rx="13" ry="11" fill="#FFFFFF" stroke="#ECE7DA" stroke-width="1"/><circle cx="55" cy="62" r="6" fill="#F4B638"/>`;
+  } else if (kind === 'comga' || kind === 'gaapchao') {
+    const brown = kind === 'gaapchao';
+    s += plate();
+    s += `<circle cx="38" cy="44" r="20" fill="${brown ? '#D9C3A0' : '#FFFFFF'}" stroke="#EAE6DB" stroke-width="1"/>`;
+    for (let i = 0; i < 18; i++) s += `<ellipse cx="${(26 + r() * 24).toFixed(1)}" cy="${(32 + r() * 24).toFixed(1)}" rx="1.8" ry="0.9" fill="${brown ? '#B89B70' : '#E9E5DA'}"/>`;
+    [[60, 36, 20], [66, 50, -12], [58, 62, 8]].forEach(([x, y, a]) => s += `<rect x="${x - 10}" y="${y - 5}" width="20" height="10" rx="4" transform="rotate(${a} ${x} ${y})" fill="${brown ? '#D99A55' : '#F2D7AE'}" stroke="${brown ? '#B9763A' : '#E2BC86'}" stroke-width="1"/>`);
+    [[34, 70], [44, 72], [26, 62]].forEach(([x, y]) => s += `<circle cx="${x}" cy="${y}" r="5.5" fill="#D6EDBE" stroke="#7DB45A" stroke-width="1.3"/>`);
+    s += herbs(6, 62, 48, 14);
+  } else if (kind === 'milk') {
+    s += `<circle cx="50" cy="50" r="40" fill="#E7EEF8" stroke="#D3DCE8" stroke-width="1.5"/><circle cx="50" cy="50" r="32" fill="#FFFFFF"/><circle cx="50" cy="50" r="24" fill="#FAFAF7"/><rect x="58" y="14" width="5" height="40" rx="2.5" transform="rotate(28 60 34)" fill="#2C6BEF"/>`;
+  } else if (kind === 'canhchua') {
+    s += bowl('#F2B566');
+    [[36, 36, 30], [62, 58, -20]].forEach(([x, y, a]) => s += `<rect x="${x - 10}" y="${y - 7}" width="20" height="14" rx="5" transform="rotate(${a} ${x} ${y})" fill="#F7EDDF" stroke="#E3D3BC" stroke-width="1"/>`);
+    [[58, 34], [38, 60], [66, 44]].forEach(([x, y], i) => s += `<path d="M${x - 7} ${y} a7 7 0 0 1 14 0 z" transform="rotate(${i * 70} ${x} ${y})" fill="#E5533F"/>`);
+    [[48, 48], [30, 48], [52, 68]].forEach(([x, y]) => s += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" rx="1.5" fill="#F6D45E"/>`);
+    for (let i = 0; i < 7; i++) { const x = 26 + r() * 46, y = 26 + r() * 46; s += `<path d="M${x.toFixed(1)} ${y.toFixed(1)} l${(6 + r() * 4).toFixed(1)} ${(r() * 4 - 2).toFixed(1)}" stroke="#FFFBEF" stroke-width="2" stroke-linecap="round"/>`; }
+    s += herbs(14);
+  } else if (kind === 'salad') {
+    s += plate('#F3F5EE');
+    for (let i = 0; i < 16; i++) { const a = r() * 6.28, d = r() * 22; s += `<circle cx="${(50 + Math.cos(a) * d).toFixed(1)}" cy="${(50 + Math.sin(a) * d).toFixed(1)}" r="${(7 + r() * 5).toFixed(1)}" fill="${['#7CC36A', '#5BAA4E', '#A6D98A', '#8FCB6E'][i % 4]}"/>`; }
+    [[44, 42, 25], [56, 52, -15], [46, 60, 40], [60, 38, 70]].forEach(([x, y, a]) => s += `<rect x="${x - 9}" y="${y - 3.5}" width="18" height="7" rx="3" transform="rotate(${a} ${x} ${y})" fill="#EDC795" stroke="#D4A56A" stroke-width="1"/>`);
+    [[32, 46], [66, 62], [52, 30]].forEach(([x, y]) => s += `<circle cx="${x}" cy="${y}" r="5" fill="#E5533F"/><circle cx="${x - 1.5}" cy="${y - 1.5}" r="1.3" fill="#FFFFFF" opacity="0.6"/>`);
+    for (let i = 0; i < 18; i++) s += `<ellipse cx="${(32 + r() * 36).toFixed(1)}" cy="${(32 + r() * 36).toFixed(1)}" rx="1" ry="0.6" fill="#FFF7E2"/>`;
+  } else if (kind === 'dauhu') {
+    s += plate();
+    s += `<circle cx="50" cy="50" r="27" fill="#E06A4C"/>`;
+    [[40, 40, 8], [56, 40, -10], [44, 56, -4], [60, 56, 12], [50, 48, 3]].forEach(([x, y, a]) => s += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="3" transform="rotate(${a} ${x} ${y})" fill="#F7E8C6" stroke="#E2C78C" stroke-width="1"/>`);
+    for (let i = 0; i < 9; i++) { const x = 30 + r() * 40, y = 30 + r() * 40; s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="none" stroke="#4FA34B" stroke-width="1.4"/>`; }
+  } else if (kind === 'pho') {
+    s += bowl('#E9C88F', '#FFFFFF');
+    for (let i = 0; i < 9; i++) { const y = 30 + i * 4.5; s += `<path d="M${24 + r() * 6} ${y} q13 ${(r() * 8 - 4).toFixed(1)} 26 0 t${(18 + r() * 8).toFixed(1)} 0" fill="none" stroke="#FFF9EC" stroke-width="2.6" stroke-linecap="round"/>`; }
+    [[40, 40, 20], [58, 44, -25], [50, 58, 10]].forEach(([x, y, a]) => s += `<ellipse cx="${x}" cy="${y}" rx="12" ry="7" transform="rotate(${a} ${x} ${y})" fill="#C9786A" stroke="#A95A4D" stroke-width="1"/>`);
+    [[34, 58], [64, 60], [62, 32]].forEach(([x, y]) => s += `<circle cx="${x}" cy="${y}" r="4" fill="none" stroke="#FFFFFF" stroke-width="1.6"/>`);
+    s += herbs(16);
+    s += `<path d="M72 30 a9 9 0 0 1 -6 14 z" fill="#A9D04F" stroke="#7DA93A" stroke-width="1"/>`;
+  }
+  return s + '</svg>';
+}
+
+// ---------- Khung chung ----------
+const sb = (cls = '') => `<div class="sb ${cls}" data-n="Status bar"><span>9:41</span><span class="sb-r">
+  <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+  <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M8 11.5 L5.6 8.9 a3.4 3.4 0 0 1 4.8 0 Z" fill="currentColor"/><path d="M3.4 6.7 a6.6 6.6 0 0 1 9.2 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M1 4.2 a10 10 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <svg width="27" height="13" viewBox="0 0 27 13" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity="0.4"/><rect x="2.5" y="2.5" width="17" height="8" rx="2" fill="currentColor"/><rect x="24.5" y="4.5" width="1.8" height="4" rx="0.9" fill="currentColor" opacity="0.4"/></svg>
+</span></div>`;
+const nav = (on) => `<nav class="nav" data-n="Tab bar">
+  ${[['home', 'house', 'Trang chủ'], ['workout', 'dumbbell', 'Tập luyện'], null, ['meals', 'utensils', 'Bữa ăn'], ['progress', 'chart-line', 'Tiến độ']].map((t) => t
+    ? `<button data-go="${t[0]}" class="${on === t[0] ? 'on' : ''}" aria-label="${t[2]}">${ic(t[1], 24, on === t[0] ? 2.3 : 1.8)}<span>${t[2]}</span></button>`
+    : `<button class="fab" data-act="sheet" aria-label="Quét bằng camera">${ic('scan-line', 26)}</button>`).join('')}
+  <i class="home-ind"></i></nav>`;
+const homeInd = (light) => `<i class="home-ind ${light ? 'light' : ''}"></i>`;
+const back = (to, glass) => `<button class="icon-btn ${glass ? 'glass' : ''}" data-go="${to}" aria-label="Quay lại">${ic('chevron-left', 22)}</button>`;
+const plateMini = (c, h = 20) => `<i class="plate" style="background:${C[c]};height:${h}px"></i>`;
+
+// ---------- Màn hình ----------
+const SCREENS = [];
+const screen = (o) => SCREENS.push(o);
+
+screen({
+  id: 'welcome', group: 'Bắt đầu', title: 'Chào mừng', dot: 'red',
+  note: 'Màn đầu tiên. Thanh đòn với bốn màu đĩa tạ là hình ảnh nhận diện, lặp lại ở trang chủ và màn tập.',
+  points: ['Ba lợi ích chính viết bằng lời của người dùng, không dùng thuật ngữ AI', 'Một nút chính, một lối vào cho người đã có tài khoản'],
+  render: () => `${sb()}
+  <div class="body" style="gap:22px">
+    <div class="card hero" style="padding:0;height:330px;overflow:hidden;justify-content:center;align-items:center;position:relative" data-n="Hero">
+      <svg width="350" height="330" viewBox="0 0 350 330" aria-hidden="true">
+        <rect x="-10" y="169" width="370" height="12" rx="6" fill="#9DA29B" opacity="0.5"/>
+        ${[['red', 30], ['blue', 66], ['yellow', 98], ['green', 126]].map(([c, x], i) => `<rect x="${x - 2}" y="${175 - [100, 90, 79, 68][i]}" width="${[32, 28, 24, 20][i]}" height="${[200, 180, 158, 136][i]}" rx="9" fill="${C[c]}"/>`).join('')}
+        ${[['red', 290], ['blue', 258], ['yellow', 230], ['green', 206]].map(([c, x], i) => `<rect x="${x}" y="${175 - [100, 90, 79, 68][i]}" width="${[32, 28, 24, 20][i]}" height="${[200, 180, 158, 136][i]}" rx="9" fill="${C[c]}"/>`).join('')}
+        <rect x="150" y="163" width="50" height="24" rx="6" fill="#26292E"/>
+      </svg>
+      <span class="tag on-hero" style="position:absolute;left:16px;top:16px">${ic('sparkles', 14)} Tập ở nhà · 30 phút mỗi ngày</span>
+    </div>
+    <div class="col" style="gap:10px">
+      <h1 class="h1" style="font-size:34px">Tập ở nhà, có người chỉnh dáng.</h1>
+      <p class="muted">FitCoach lên lịch theo giờ rảnh của bạn, đếm lần và sửa tư thế qua camera, gợi ý món ăn vừa túi tiền.</p>
+    </div>
+    <div class="col" style="gap:14px">
+      ${[['calendar-days', 'red', 'Lịch tập riêng', 'Theo mục tiêu, số buổi và dụng cụ bạn có'], ['camera', 'blue', 'Camera đếm lần', 'Nhắc ngay khi gối chụm hay lưng cong'], ['salad', 'green', 'Ăn đúng mà không đắt', 'Gợi ý món Việt theo calo và ngân sách ngày']].map(([i, c, t, d]) => `
+        <div class="feat"><span class="fi" style="background:var(--${c}-soft);color:var(--${c}-ink)">${ic(i, 20)}</span><div><p class="h3">${t}</p><p class="small muted">${d}</p></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="actionbar" style="flex-direction:column;gap:6px" data-n="Action bar">
+    <button class="btn wide" data-go="setup">Bắt đầu, mất 2 phút ${ic('arrow-right', 18)}</button>
+    <button class="btn wide" style="background:transparent;color:var(--ink)" data-go="home">Tôi đã có tài khoản</button>
+    ${homeInd()}
+  </div>`,
+});
+
+screen({
+  id: 'setup', group: 'Bắt đầu', title: 'Chọn mục tiêu', dot: 'red',
+  note: 'Bước 2 trong 7 bước thiết lập. Mỗi lựa chọn nói rõ app sẽ làm gì khác đi.',
+  points: ['Mục tiêu mới “Khỏe hơn mỗi ngày” cho người không muốn đếm cân nặng', 'Tính sẵn ngày dự kiến đạt cân nặng mong muốn'], newPoints: ['Mục tiêu “Khỏe hơn mỗi ngày”'],
+  render: () => {
+    const opts = [['lose', 'red', 'Giảm cân', 'Đốt mỡ, giữ cơ. Ăn thiếu khoảng 400 kcal mỗi ngày.'], ['muscle', 'blue', 'Tăng cơ', 'Tập nặng dần mỗi tuần, ăn đủ đạm.'], ['gain', 'yellow', 'Tăng cân', 'Ăn dư calo, tập sức mạnh để lên cân săn chắc.'], ['health', 'green', 'Khỏe hơn mỗi ngày', 'Vận động đều, ngủ ngon, không áp lực cân nặng.']];
+    const weeks = Math.ceil((61.4 - S.target) / 0.5);
+    const eta = new Date(2026, 9, 22 + weeks * 7);
+    return `${sb()}
+    <div class="body" style="gap:18px">
+      <div class="row">${back('welcome')}<div class="grow col" style="gap:8px"><div class="progress7">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<i class="${i < 2 ? 'on' : ''}"></i>`).join('')}</div><span class="lbl">Bước 2/7 · Mục tiêu</span></div><button class="link" data-go="home">Bỏ qua</button></div>
+      <div class="col" style="gap:8px"><h1 class="h1">Mục tiêu chính của bạn?</h1><p class="muted">FitCoach dùng mục tiêu để chọn bài tập và tính calo mỗi ngày. Đổi lại lúc nào cũng được.</p></div>
+      <div class="col" style="gap:10px" role="radiogroup">
+        ${opts.map(([k, c, t, d]) => `<button class="opt ${S.goal === k ? 'on' : ''}" role="radio" aria-checked="${S.goal === k}" data-act="goal" data-v="${k}">
+          ${plateMini(c, 40)}<span class="grow col" style="gap:2px"><b class="h3">${t}</b><span class="small muted">${d}</span></span><span class="radio">${S.goal === k ? ic('check', 14, 3) : ''}</span></button>`).join('')}
+      </div>
+      <div class="card tight">
+        <div class="row between"><span class="h3">Cân nặng mong muốn</span><div class="stepper"><button data-act="target" data-v="-0.5" aria-label="Giảm">${ic('minus', 18)}</button><span class="num" style="font-size:30px;min-width:74px;text-align:center">${vn(S.target, 1)}<small style="font-size:16px;color:var(--ink-2)"> kg</small></span><button data-act="target" data-v="0.5" aria-label="Tăng">${ic('plus', 18)}</button></div></div>
+        <p class="small muted">Hiện tại 61,4 kg. Giảm 0,5 kg mỗi tuần là an toàn, dự kiến đạt vào ${eta.getDate()}/${eta.getMonth() + 1}/${eta.getFullYear()}.</p>
+      </div>
+    </div>
+    <div class="actionbar" data-n="Action bar"><button class="btn wide" data-go="home">Tiếp tục</button>${homeInd()}</div>`;
+  },
+});
+
+screen({
+  id: 'home', group: 'Màn chính', title: 'Trang chủ', dot: 'red', nav: 'home',
+  note: 'Mọi con số trong ngày gói trong một thanh đòn: bốn đĩa là calo đốt, bước chân, phút tập, nước. Đĩa đầy dần theo tiến độ.',
+  points: ['Lịch tuần ngay dưới lời chào, chấm màu là nhóm cơ đã tập', 'Buổi tập hôm nay có nút tập tiếp, không cần mở trang khác', 'Bấm +250 ml để thấy đĩa nước đầy lên', 'Lời nhắc của HLV dựa trên giấc ngủ và buổi tập hôm qua'],
+  newPoints: ['Thanh đòn chỉ số ngày', 'Nước, giấc ngủ, nhịp tim, cân nặng', 'Lời nhắc HLV AI'],
+  render: () => {
+    const m = metrics();
+    const pct = Math.round(m.reduce((a, x) => a + Math.min(1, x.v / x.t), 0) / m.length * 100);
+    const left = 8000 - 6842;
+    return `${sb()}
+    <div class="body">
+      <header class="row" data-n="Header">
+        <button class="avatar" data-go="profile" aria-label="Hồ sơ">MA</button>
+        <div class="grow"><p class="lbl">Thứ Năm · 22 tháng 10</p><h1 class="h2" style="font-size:22px;font-weight:800;letter-spacing:-.025em">Chào Minh Anh</h1></div>
+        <button class="icon-btn" aria-label="Thông báo, có 2 tin mới">${ic('bell', 21)}<i class="dot"></i></button>
+      </header>
+      <div class="week" data-n="Tuần này">
+        ${WEEK.map((d) => `<div class="day ${d.today ? 'today' : ''}"><span class="wd">${d.wd}</span><span class="dn">${d.d}</span><i class="pip" style="${d.g && (d.done || d.today) ? `background:${C[GROUP[d.g].c]}` : d.g ? `background:transparent;box-shadow:inset 0 0 0 1.2px ${C[GROUP[d.g].c]}` : ''}"></i></div>`).join('')}
+      </div>
+      <section class="card hero" data-n="Thanh đòn hôm nay">
+        <div class="row between"><p class="lbl">Thanh đòn hôm nay</p><button class="link" data-go="health">Chi tiết ${ic('chevron-right', 16)}</button></div>
+        <div class="hero-mid">
+          <div class="hero-pct"><span class="num big" id="home-pct">${pct}</span><span class="num pct">%</span><p class="small muted" style="margin-top:6px">mục tiêu<br>trong ngày</p></div>
+          <div class="grow" style="display:flex;justify-content:flex-end">${barbell(m.map((x) => ({ c: x.c, pct: x.v / x.t })), { anim: true })}</div>
+        </div>
+        <div class="legend4">${m.map((x) => `<div class="lg"><span class="nm"><i style="background:${C[x.c]}"></i>${x.nm}</span><span class="num">${x.show}</span><span class="of">${x.of}</span></div>`).join('')}</div>
+        <p class="hint">${ic('footprints', 16)}<span>Còn ${vn(left)} bước nữa là đầy đĩa xanh lá.</span></p>
+      </section>
+      <section class="card" data-n="Buổi tập hôm nay">
+        <div class="row between"><p class="lbl">Buổi tập hôm nay</p><span class="tag red">${GROUP.legs.name}</span></div>
+        <div class="row" style="align-items:flex-start">
+          <div class="grow col" style="gap:4px"><h2 class="h2">Thân dưới · Sức mạnh</h2><p class="small muted">${SESSION.length} bài · 38 phút · khoảng 280 kcal</p></div>
+          <span class="thumb" style="background:var(--red-soft);width:56px;height:56px">${pose('hipthrust', 44, 'var(--red-ink)')}</span>
+        </div>
+        <div class="row between">
+          <div class="mini-plates">${SESSION.map((e) => `<i class="${S.done.has(e.id) ? '' : 'off'}" style="${S.done.has(e.id) ? `background:${C[GROUP[e.g].c]}` : ''}"></i>`).join('')}</div>
+          <span class="num" style="font-size:22px">${S.done.size}<span style="color:var(--ink-3)">/${SESSION.length} bài</span></span>
+        </div>
+        <button class="btn" data-go="session">${ic('play', 18)} Tập tiếp: ${SESSION.find((e) => !S.done.has(e.id))?.name ?? 'Giãn cơ'}</button>
+      </section>
+      <div class="grid2">
+        <div class="tile" data-n="Nước">
+          <div class="tile-h"><span class="ib" style="background:var(--blue-soft);color:var(--blue-ink)">${ic('droplet', 16)}</span>Nước</div>
+          <span class="num">${vn(S.water * .25, 2).replace(/0$/, '')}<small>/ 2 lít</small></span>
+          <div class="glasses">${Array.from({ length: 8 }, (_, i) => `<i class="${i < S.water ? 'on' : ''}"></i>`).join('')}</div>
+          <button class="mini-btn" data-act="water" style="align-self:flex-start">${ic('plus', 14, 2.4)} 250 ml</button>
+        </div>
+        <button class="tile" data-go="health" data-n="Giấc ngủ">
+          <div class="tile-h"><span class="ib" style="background:var(--blue-soft);color:var(--blue-ink)">${ic('moon', 16)}</span>Giấc ngủ</div>
+          <span class="num">7<small>g</small> 20<small>p</small></span>
+          <span class="xs muted">23:10 → 06:30</span>
+          <div class="stack" style="height:10px;margin-top:auto">${[[3, 'var(--yellow)'], [25, 'var(--blue-2)'], [22, 'var(--blue)'], [30, 'var(--blue-2)'], [12, 'var(--green)'], [8, 'var(--blue-2)']].map(([w, c]) => `<i style="flex:${w};background:${c}"></i>`).join('')}</div>
+        </button>
+        <button class="tile" data-go="health" data-n="Nhịp tim">
+          <div class="tile-h"><span class="ib" style="background:var(--red-soft);color:var(--red-ink)">${ic('heart-pulse', 16)}</span>Nhịp tim nghỉ</div>
+          <span class="num">64<small>bpm</small></span>
+          <svg width="100%" height="36" viewBox="0 0 140 36" preserveAspectRatio="none" style="margin-top:auto" aria-hidden="true"><path d="M0 22 L18 22 L24 10 L30 30 L36 18 L60 18 L66 6 L72 28 L78 20 L102 20 L108 12 L114 26 L120 19 L140 19" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+        <button class="tile" data-go="progress" data-n="Cân nặng">
+          <div class="tile-h"><span class="ib" style="background:var(--green-soft);color:var(--green-ink)">${ic('scale', 16)}</span>Cân nặng</div>
+          <span class="num">61,4<small>kg</small></span>
+          <span class="delta">${ic('trending-down', 14)} 0,4 kg tuần này</span>
+          <div class="bar" style="margin-top:auto"><i style="width:43%;background:var(--green)"></i></div>
+          <span class="xs muted">Đã giảm 2,6/6 kg</span>
+        </button>
+      </div>
+      <button class="card" data-go="meals" data-n="Bữa ăn hôm nay">
+        <div class="row between"><p class="lbl">Bữa ăn hôm nay</p><span class="link">Xem ${ic('chevron-right', 16)}</span></div>
+        <div class="row between" style="align-items:flex-end">
+          <p><span class="num" style="font-size:40px">1.120</span><span class="small muted"> / 1.650 kcal</span></p>
+          <span class="tag green">Còn 530 kcal</span>
+        </div>
+        <div class="col" style="gap:8px">
+          ${[['Đạm', 65, 95, 'red'], ['Tinh bột', 138, 180, 'yellow'], ['Chất béo', 31, 50, 'blue']].map(([n, v, t, c]) => `<div class="macro"><b>${n}</b><div class="bar"><i style="width:${v / t * 100}%;background:${C[c]}"></i></div><span>${v}/${t} g</span></div>`).join('')}
+        </div>
+        <div class="divider"></div>
+        <div class="next-meal">${dish('canhchua', 52)}<div class="grow col"><span class="lbl">Gợi ý bữa tối</span><b style="font-weight:600">${DISHES.canhchua.name}</b><span class="xs muted">450 kcal · 32 g đạm · 45.000đ</span></div>${ic('chevron-right', 18)}</div>
+      </button>
+      <div class="tip" data-n="Lời nhắc HLV">
+        <span class="ib">${ic('sparkles', 18)}</span>
+        <div class="col" style="gap:3px"><b class="h3">Lời nhắc từ HLV</b><p class="small">Đêm qua bạn ngủ đủ 7 tiếng và chân đã nghỉ 3 ngày. Hôm nay thử tăng Hip thrust lên 14 lần ở hiệp cuối.</p></div>
+      </div>
+    </div>
+    ${nav('home')}`;
+  },
+});
+
+screen({
+  id: 'workout', group: 'Màn chính', title: 'Tập luyện', dot: 'red', nav: 'workout',
+  note: 'Buổi tập hôm nay chia ba phần đúng thứ tự: khởi động, bài chính, giãn cơ. Mỗi bài xong lắp thêm một đĩa lên thanh đòn.',
+  points: ['Lịch cả tuần ở đầu trang, màu theo nhóm cơ', 'Bấm vòng tròn bên phải để đánh dấu xong bài, thanh đòn cập nhật ngay', 'Nhãn AI cho bài có camera chỉnh dáng', 'Bấm vào bài để xem cách làm'],
+  render: () => {
+    const next = SESSION.find((e) => !S.done.has(e.id));
+    return `${sb()}
+    <div class="body">
+      <header class="row between"><h1 class="h1">Tập luyện</h1><button class="icon-btn" aria-label="Thư viện bài tập">${ic('search', 20)}</button></header>
+      <div class="seg" role="tablist"><button class="on" role="tab">Hôm nay</button><button role="tab">Lịch tuần</button><button role="tab">Thư viện</button></div>
+      <div class="wk-days" data-n="Lịch tuần">
+        ${WEEK.map((d) => `<div class="wk-day ${d.g ? '' : 'rest'} ${d.today ? 'today' : ''}"><span class="wd">${d.wd}</span><span class="dn">${d.d}</span>${d.done ? `<span class="ck">${ic('check', 10, 3.4)}</span>` : d.g ? `<i class="pl" style="background:${C[GROUP[d.g].c]}"></i>` : `<i class="pl" style="background:var(--line)"></i>`}</div>`).join('')}
+      </div>
+      <section class="card hero" data-n="Buổi hôm nay">
+        <div class="row between"><p class="lbl">Thứ Năm · Giảm cân</p><span class="tag on-hero">${ic('timer', 14)} 38 phút</span></div>
+        <h2 class="h1" style="font-size:28px">Thân dưới ·<br>Sức mạnh</h2>
+        <div class="chips"><span class="tag on-hero">${SESSION.length} bài</span><span class="tag on-hero">${ic('flame', 13)} ~280 kcal</span><span class="tag on-hero">Thảm, tạ đơn 4 kg, ghế</span></div>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          ${barbell(SESSION.map((e) => S.done.has(e.id) ? { c: GROUP[e.g].c, pct: 1 } : { outline: true }), { w: 250, h: 92, pw: 22, gap: 5, ph: 84 })}
+          <div class="col" style="align-items:flex-end"><span class="num" style="font-size:40px" id="wk-count">${S.done.size}/${SESSION.length}</span><span class="xs muted" style="white-space:nowrap">bài đã xong</span></div>
+        </div>
+        <button class="btn light" data-go="session">${ic('play', 18)} ${next ? `${S.done.size ? 'Tập tiếp' : 'Bắt đầu'}: ${next.name}` : 'Giãn cơ sau tập'}</button>
+      </section>
+      <div class="part"><span class="n done">${ic('check', 14, 3)}</span><h2 class="h2 grow">Khởi động</h2><span class="xs muted">5 phút · 6 động tác</span></div>
+      <button class="phase" style="background:var(--yellow-soft)" data-n="Khởi động"><span class="pi done">${ic('check', 22, 3)}</span><span class="grow col"><b style="font-weight:600">Làm nóng cơ thể · đã xong</b><span class="xs muted">Xoay khớp · Jumping jack · Squat nhẹ · Mở hông</span></span>${ic('chevron-right', 18)}</button>
+      <div class="part"><span class="n">2</span><h2 class="h2 grow">Bài chính</h2><span class="xs muted">${SESSION.length} bài · ${S.done.size} đã xong</span></div>
+      <ul class="ex-list" data-n="Danh sách bài">
+        ${SESSION.map((e) => { const g = GROUP[e.g]; const done = S.done.has(e.id); return `<li class="ex ${done ? 'done' : ''}" data-n="Bài / ${e.name}">
+          <button class="ex-main" data-go="exercise"><span class="thumb" style="background:var(--${g.c}-soft)">${pose(e.pose, 46, `var(--${g.c}-ink)`)}</span>
+          <span class="ex-txt"><b>${e.name}</b><span class="ex-amt">${e.sets} × ${e.amt}</span><span class="ex-meta"><span>nghỉ ${e.rest}s</span><span class="mtag"><i style="background:${C[g.c]}"></i>${g.name}</span>${e.ai ? `<span class="ai">${ic('camera', 12, 2.4)} AI</span>` : ''}</span></span></button>
+          <button class="chk" data-act="toggle" data-id="${e.id}" aria-pressed="${done}" aria-label="${done ? 'Bỏ đánh dấu' : 'Đánh dấu xong'} ${e.name}">${ic('check', 18, 3)}</button></li>`; }).join('')}
+      </ul>
+      <div class="part"><span class="n">3</span><h2 class="h2 grow">Giãn cơ</h2><span class="xs muted">6 phút · 5 động tác</span></div>
+      <button class="phase" style="background:var(--green-soft)" data-n="Giãn cơ"><span class="pi">${pose('cooldown', 40, 'var(--green-ink)', false)}</span><span class="grow col"><b style="font-weight:600">Thả lỏng và hồi phục</b><span class="xs muted">Gập người · Kéo đùi trước · Bồ câu · Xoay cột sống</span></span>${ic('chevron-right', 18)}</button>
+      <button class="btn line" data-go="done">Kết thúc buổi tập</button>
+    </div>
+    ${nav('workout')}`;
+  },
+});
+
+screen({
+  id: 'exercise', group: 'Tập luyện', title: 'Chi tiết bài tập', dot: 'blue',
+  note: 'Mọi thứ cần biết về một bài: số hiệp, cơ tác động, cách làm từng bước, lỗi hay gặp.',
+  points: ['Thanh mức độ tác động cho từng cơ thay cho bản đồ cơ khó đọc', 'Hai lối vào: tập với camera AI hoặc tập thường'],
+  render: () => `${sb()}
+  <div class="body">
+    <div class="visual" style="background:var(--red-soft)" data-n="Minh hoạ">
+      ${pose('squat', 230, 'var(--red-ink)')}
+      <span class="tl">${back('workout')}</span>
+      <span class="tr"><button class="icon-btn" aria-label="Lưu bài">${ic('heart', 20)}</button></span>
+      <span class="br"><button class="pill">${ic('play', 14)} Xem video 0:48</button></span>
+      <span class="bl"><span class="tag" style="background:var(--surface)">Góc nghiêng</span></span>
+    </div>
+    <div class="col" style="gap:10px">
+      <h1 class="h1">Squat</h1>
+      <div class="chips"><span class="tag green">Dễ</span><span class="tag">Không dụng cụ</span><span class="tag blue">${ic('camera', 13)} Có camera chỉnh dáng</span></div>
+    </div>
+    <div class="stat4" data-n="Thông số">
+      ${[['3', 'hiệp'], ['15', 'lần'], ['60s', 'nghỉ'], ['45', 'kcal']].map(([v, l]) => `<div><span class="num">${v}</span><span>${l}</span></div>`).join('')}
+    </div>
+    <section class="card" data-n="Cơ tác động">
+      <h2 class="h3">Cơ tác động</h2>
+      ${[['Đùi trước', 90], ['Mông', 80], ['Đùi sau', 45], ['Bắp chân', 30], ['Bụng', 25]].map(([n, v], i) => `<div class="mbar"><span>${n}</span><div class="bar" style="height:10px"><i style="width:${v}%;background:${i < 2 ? 'var(--red)' : 'var(--ink-3)'}"></i></div><span>${v}%</span></div>`).join('')}
+      <p class="xs muted">Đỏ là cơ chính, xám là cơ hỗ trợ.</p>
+    </section>
+    <section class="card" data-n="Cách làm">
+      <h2 class="h3">Cách làm</h2>
+      <ol class="steps">${['Hai chân rộng bằng vai, mũi chân hơi mở ra ngoài.', 'Đẩy hông ra sau như đang ngồi xuống ghế.', 'Hạ đến khi đùi song song mặt sàn.', 'Đạp gót chân để đứng lên, siết mông ở đỉnh.'].map((t, i) => `<li><span class="sn">${i + 1}</span><span>${t}</span></li>`).join('')}</ol>
+    </section>
+    <section class="card" data-n="Lỗi hay gặp">
+      <h2 class="h3">Lỗi hay gặp</h2>
+      <ul class="warn col" style="gap:10px">${['Gót chân nhấc khỏi sàn', 'Lưng cong về trước', 'Gối chụm vào trong'].map((t) => `<li>${ic('triangle-alert', 18)}<span>${t}</span></li>`).join('')}</ul>
+    </section>
+  </div>
+  <div class="actionbar" data-n="Action bar">
+    <button class="btn ghost" data-go="coach" style="flex:1">${ic('camera', 18)} Camera AI</button>
+    <button class="btn" data-go="session" style="flex:1.3">${ic('play', 18)} Bắt đầu</button>
+    ${homeInd()}
+  </div>`,
+});
+
+screen({
+  id: 'session', group: 'Tập luyện', title: 'Đang tập', dot: 'blue', cam: true,
+  note: 'Màn tối để đỡ chói khi đặt điện thoại xuống sàn. Số lần to nhất màn hình, đọc được từ 2 mét.',
+  points: ['Đếm lần tự động, bấm Xong hiệp để sang hiệp sau', 'Gợi ý tư thế đọc to bằng giọng tiếng Việt', 'Luôn thấy bài tiếp theo'],
+  render: () => {
+    const e = SESSION[2];
+    return `${sb()}
+    <div class="body" style="gap:16px">
+      <div class="row"><button class="icon-btn" data-go="workout" aria-label="Thoát">${ic('x', 22)}</button><div class="grow" style="text-align:center"><p class="lbl">Bài 3/6</p><p class="h3">${e.name}</p></div><button class="icon-btn" aria-label="Tắt giọng đọc">${ic('volume-2', 20)}</button></div>
+      <div class="segs">${SESSION.map((x, i) => `<i class="${i < 2 ? 'on' : i === 2 ? 'half' : ''}"></i>`).join('')}</div>
+      <div class="stage-panel" data-n="Minh hoạ">${pose('hipthrust', 210, 'var(--cam-ink)')}<span class="tag" style="position:absolute;top:14px;left:14px;background:var(--cam-3);color:var(--cam-ink)"><span>Hiệp <b id="set-no">${S.set}</b>/4</span></span><span class="tag" style="position:absolute;top:14px;right:14px;background:var(--cam-3);color:var(--cam-ink)">${ic('timer', 13)} <span id="clock">00:32</span></span></div>
+      <div class="counter" data-n="Bộ đếm"><span class="num" id="rep">${String(S.reps).padStart(2, '0')}</span><span class="of">/ 12 lần</span></div>
+      <div class="cue"><span style="color:#FFC34A">${ic('volume-2', 20)}</span><p style="font-size:15px">Siết mông ở đỉnh, giữ 1 giây. Cằm hơi cúi, mắt nhìn về đầu gối.</p></div>
+      <div class="ctrl"><button class="round" aria-label="Tạm dừng">${ic('pause', 22)}</button><button class="btn" data-act="set">${ic('check', 20, 2.6)} Xong hiệp</button><button class="round" aria-label="Bỏ qua bài">${ic('skip-forward', 22)}</button></div>
+      <button class="next" data-go="exercise"><span class="thumb" style="background:var(--cam-2);width:52px;height:52px">${pose('rdl', 40, 'var(--cam-ink-2)')}</span><span class="grow col" style="gap:2px"><span class="lbl" style="color:var(--cam-ink-2)">Tiếp theo</span><b style="font-weight:600">Romanian deadlift tạ đơn</b></span><span class="num" style="font-size:20px;color:var(--cam-ink-2)">3 × 12</span></button>
+    </div>
+    ${homeInd(true)}`;
+  },
+});
+
+screen({
+  id: 'coach', group: 'Tập luyện', title: 'Camera chỉnh dáng', dot: 'blue', cam: true,
+  note: 'Camera nhận dạng 33 điểm trên cơ thể, đo góc gối, hông, lưng và nhắc ngay khi sai. Mọi xử lý chạy trên máy.',
+  points: ['Khung xương vẽ đè lên người tập, khớp sai đổi màu vàng', 'Ba góc quan trọng hiện bên phải', 'Thanh phản hồi xanh khi đúng, vàng khi cần sửa', 'Điểm dáng chuẩn cho từng lần'],
+  newPoints: ['Điểm dáng chuẩn theo từng lần'],
+  render: () => {
+    const J = { head: [170, 150], sh: [160, 210], el: [222, 232], wr: [268, 226], hip: [112, 316], kn: [206, 322], an: [194, 418], toe: [238, 424] };
+    const L = (a, b) => `M${J[a][0]} ${J[a][1]} L${J[b][0]} ${J[b][1]}`;
+    return `<div class="camview" data-n="Camera">
+      <svg width="390" height="560" viewBox="0 0 390 560" aria-hidden="true" style="position:absolute;inset:0">
+        <path d="M0 436 L390 436" stroke="#3A3F45" stroke-width="2"/>
+        <rect x="40" y="430" width="300" height="9" rx="4.5" fill="#2E4A3F"/>
+        <g fill="none" stroke="#3B4148" stroke-linecap="round" stroke-linejoin="round">
+          <path d="${L('hip', 'sh')}" stroke-width="66"/><path d="${L('hip', 'kn')} L${J.an[0]} ${J.an[1]}" stroke-width="44"/><path d="M${J.an[0]} ${J.an[1]} L${J.toe[0]} ${J.toe[1]}" stroke-width="22"/><path d="${L('sh', 'el')} L${J.wr[0]} ${J.wr[1]}" stroke-width="24"/>
+        </g>
+        <circle cx="${J.head[0]}" cy="${J.head[1]}" r="32" fill="#3B4148"/>
+        <g fill="none" stroke="#4BDB9A" stroke-width="3.5" stroke-linecap="round"><path d="${L('sh', 'hip')}"/><path d="${L('hip', 'kn')}"/><path d="${L('sh', 'el')}"/><path d="${L('el', 'wr')}"/><path d="${L('an', 'toe')}"/><path d="${L('head', 'sh')}"/></g>
+        <path d="${L('kn', 'an')}" stroke="#FFC34A" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M ${J.kn[0] - 30} ${J.kn[1] - 2} A 30 30 0 0 0 ${J.kn[0] - 4} ${J.kn[1] + 30}" fill="none" stroke="#4BDB9A" stroke-width="2.5" stroke-dasharray="3 4"/>
+        ${Object.entries(J).map(([k, [x, y]]) => `<circle cx="${x}" cy="${y}" r="${k === 'head' ? 7 : 6.5}" fill="#FFFFFF" stroke="${k === 'an' || k === 'toe' ? '#FFC34A' : '#4BDB9A'}" stroke-width="3"/>`).join('')}
+        
+      </svg>
+      ${sb('clear')}
+      <div class="cam-top"><button class="icon-btn" data-go="exercise" aria-label="Đóng">${ic('x', 22)}</button><div class="cam-title"><p class="lbl" style="color:var(--cam-ink-2)">Hiệp 1/3</p><p class="h3">Squat</p></div><button class="icon-btn" aria-label="Đổi camera">${ic('flip-horizontal-2', 20)}</button></div>
+      <div class="angles">
+        <div class="angle good"><p class="lbl">Gối</p><span class="num">92°</span></div>
+        <div class="angle good"><p class="lbl">Hông</p><span class="num">78°</span></div>
+        <div class="angle warn"><p class="lbl">Cổ chân</p><span class="num">31°</span></div>
+      </div>
+      <div class="fb" style="background:#B07A00" data-n="Phản hồi">${ic('triangle-alert', 20)}<span>Gót chân đang nhấc lên. Dồn lực xuống gót.</span></div>
+    </div>
+    <div class="sheet" data-n="Bảng điểm">
+      <i class="handle"></i>
+      <div class="row between" style="align-items:flex-end">
+        <div><p class="lbl">Đã đếm</p><p><span class="num" style="font-size:60px" id="coach-rep">${String(S.coachReps).padStart(2, '0')}</span><span class="num" style="font-size:26px;color:var(--ink-3)"> / 15 lần</span></p></div>
+        <div class="col" style="align-items:flex-end;gap:4px"><p class="lbl">Dáng chuẩn</p><span class="num" style="font-size:40px;color:var(--green-ink)">86%</span></div>
+      </div>
+      <div class="score">${[['Độ sâu', '9/10', 'green'], ['Lưng', '8/10', 'green'], ['Gót chân', '5/10', 'yellow']].map(([n, v, c]) => `<div><span class="xs muted">${n}</span><span class="num">${v}</span><div class="bar" style="height:6px"><i style="width:${parseInt(v) * 10}%;background:${C[c]}"></i></div></div>`).join('')}</div>
+      <div class="row"><button class="btn ghost" style="flex:1">${ic('pause', 18)} Tạm dừng</button><button class="btn" style="flex:1.3" data-go="session">${ic('check', 18, 2.6)} Xong hiệp</button></div>
+      <p class="xs muted row" style="gap:6px">${ic('lock', 14)} Hình ảnh xử lý ngay trên điện thoại, không gửi đi đâu.</p>
+    </div>
+    <i class="home-ind dark"></i>`;
+  },
+});
+
+screen({
+  id: 'done', group: 'Tập luyện', title: 'Tổng kết buổi tập', dot: 'blue', cam: true,
+  note: 'Thanh đòn lắp đủ đĩa là phần thưởng. Hỏi cảm giác sau buổi để buổi sau tự điều chỉnh độ nặng.',
+  points: ['Kỷ lục mới được tách riêng', 'Câu hỏi mức nặng (RPE) giúp lịch tập tự tăng giảm', 'Chuỗi buổi liền để giữ thói quen'],
+  newPoints: ['Tự điều chỉnh độ nặng theo cảm nhận'],
+  render: () => `${sb()}
+  <div class="body" style="gap:18px">
+    <div class="row between"><button class="icon-btn" data-go="home" aria-label="Đóng">${ic('x', 22)}</button><button class="icon-btn" aria-label="Chia sẻ">${ic('share-2', 20)}</button></div>
+    <div class="col" style="align-items:center;gap:6px;text-align:center">
+      ${barbell(SESSION.map((e) => ({ c: GROUP[e.g].c, pct: 1 })), { w: 330, h: 150, pw: 30, gap: 6, ph: 140, anim: true, shaft: 'var(--cam-ink-2)' })}
+      <p class="lbl" style="color:var(--cam-ink-2);margin-top:6px">Thứ Năm 22/10 · Thân dưới</p>
+      <h1 class="h1" style="font-size:36px">Xong buổi tập!</h1>
+      <p class="row" style="gap:6px;color:#FFC34A;font-weight:600">${ic('flame', 18)} Chuỗi 13 buổi liền</p>
+    </div>
+    <div class="grid2">${[['38:12', 'thời gian'], ['312', 'kcal đã đốt'], ['22', 'hiệp'], ['89%', 'dáng chuẩn']].map(([v, l]) => `<div style="background:var(--cam-2);border-radius:20px;padding:14px"><span class="num" style="font-size:38px">${v}</span><p class="small" style="color:var(--cam-ink-2)">${l}</p></div>`).join('')}</div>
+    <div style="background:var(--cam-2);border-radius:20px;padding:14px;display:flex;gap:12px;align-items:center"><span class="ch-ic" style="background:#F1B11A;color:#14161A;width:44px;height:44px">${ic('trophy', 22)}</span><div class="grow"><p class="lbl" style="color:var(--cam-ink-2)">Kỷ lục mới</p><p style="font-weight:600">Squat 3 hiệp × 18 lần</p></div><span class="small" style="color:var(--cam-ink-2)">trước: 15</span></div>
+    <div class="col" style="gap:10px"><p class="h3">Buổi này thấy thế nào?</p>
+      <div class="chipset">${['Nhẹ', 'Vừa sức', 'Khá nặng', 'Quá sức'].map((t, i) => `<button class="choice" style="${S.rpe === i ? 'background:var(--cam-ink);color:#14161A' : 'background:var(--cam-3);color:var(--cam-ink)'}" data-act="rpe" data-v="${i}">${t}</button>`).join('')}</div>
+      <p class="xs" style="color:var(--cam-ink-2)">Buổi sau FitCoach sẽ ${['tăng thêm 2 lần mỗi hiệp', 'giữ nguyên độ nặng', 'giữ nguyên số lần, nghỉ lâu hơn 15 giây', 'giảm 1 hiệp mỗi bài'][S.rpe]}.</p>
+    </div>
+  </div>
+  <div class="actionbar" data-n="Action bar"><button class="btn wide" style="background:var(--cam-ink);color:#14161A" data-go="home">Lưu và về trang chủ</button>${homeInd(true)}</div>`,
+});
+
+screen({
+  id: 'meals', group: 'Màn chính', title: 'Bữa ăn', dot: 'green', nav: 'meals',
+  note: 'Calo còn lại là con số lớn nhất, kèm đạm, tinh bột, béo và tiền đã chi trong ngày.',
+  points: ['Dòng thời gian bốn bữa, bữa chưa ghi có sẵn mức calo gợi ý', 'Gợi ý món theo bữa, mục tiêu và tiền còn lại', 'Bấm + trên món để thêm vào bữa tối', 'Ly nước bấm được'],
+  newPoints: ['Dòng thời gian bữa ăn', 'Thẻ món có ảnh minh hoạ và nhãn lý do'],
+  render: () => {
+    const sug = ['canhchua', 'salad', 'dauhu', 'gaapchao'];
+    return `${sb()}
+    <div class="body">
+      <header class="row between"><h1 class="h1">Bữa ăn</h1><div class="row" style="gap:6px"><button class="icon-btn" aria-label="Hôm qua">${ic('chevron-left', 20)}</button><span class="small" style="font-weight:600">Hôm nay</span><button class="icon-btn" aria-label="Ngày mai">${ic('chevron-right', 20)}</button></div></header>
+      <section class="card" data-n="Tổng calo">
+        <div class="row between" style="align-items:flex-start">
+          <div><p class="lbl">Còn lại</p><div class="kcal-big"><span class="num">530</span><span>kcal</span></div></div>
+          <div class="formula" style="flex-direction:column;align-items:flex-end;gap:3px;padding-top:4px"><span>Mục tiêu <b>1.650</b></span><span>Đã ăn <b>1.120</b></span><span>Đã đốt <b>412</b></span></div>
+        </div>
+        <div class="stack" style="height:16px">${[[480, 'var(--yellow)'], [520, 'var(--red)'], [120, 'var(--green)'], [530, 'var(--surface-2)']].map(([w, c]) => `<i style="flex:${w};background:${c}"></i>`).join('')}</div>
+        <div class="legend">${[['Sáng', 'yellow'], ['Trưa', 'red'], ['Bữa phụ', 'green'], ['Tối', 'blue']].map(([n, c]) => `<span><i style="background:${n === 'Tối' ? 'var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line)' : C[c]}"></i>${n}</span>`).join('')}</div>
+        <div class="divider"></div>
+        <div class="stack-lg">${[['Đạm', 65, 95, 'red'], ['Tinh bột', 138, 180, 'yellow'], ['Chất béo', 31, 50, 'blue']].map(([n, v, t, c]) => `<div><span class="nm"><i style="background:${C[c]}"></i>${n}</span><span class="num">${v}<small style="font-size:15px;color:var(--ink-3)">/${t}g</small></span><div class="bar" style="height:6px"><i style="width:${v / t * 100}%;background:${C[c]}"></i></div></div>`).join('')}</div>
+        <div class="row" style="background:var(--surface-2);border-radius:14px;padding:10px 12px;gap:10px">${ic('wallet', 18)}<span class="small grow">Đã chi <b>63.000đ</b></span><span class="small muted">còn 57.000đ</span></div>
+      </section>
+      <button class="card hero" data-go="scan" style="flex-direction:row;align-items:center;gap:14px;padding:14px" data-n="Chụp món">
+        <span class="ch-ic" style="background:var(--hero-2);color:var(--on-hero)">${ic('camera', 24)}</span>
+        <span class="grow col" style="gap:2px"><b class="h3">Chụp món để tính calo</b><span class="xs muted">Nhận ra 28 món Việt như phở, bún bò, cơm tấm</span></span>${ic('chevron-right', 20)}
+      </button>
+      <div class="sec"><h2 class="h2">Hôm nay đã ăn</h2><span class="xs muted">3/4 bữa</span></div>
+      <div class="list-card" data-n="Dòng thời gian">
+        ${[['Sáng', '07:30', 'oats'], ['Trưa', '12:15', 'comga'], ['Bữa phụ', '15:40', 'milk']].map(([w, t, k]) => `<div class="meal"><div class="when"><b>${w}</b><span>${t}</span></div><span class="dish">${dish(k, 46)}</span><div class="grow col"><span style="font-weight:600;font-size:14px">${DISHES[k].name}</span><span class="xs muted">${DISHES[k].kcal} kcal · ${DISHES[k].p} g đạm · ${money(DISHES[k].price)}</span></div></div>`).join('')}
+        <div class="meal"><div class="when"><b>Tối</b><span>--:--</span></div><span class="empty">${ic('plus', 20)}</span><div class="grow col"><span style="font-weight:600;font-size:14px">Chưa ghi</span><span class="xs muted">Gợi ý 450–530 kcal</span></div><button class="mini-btn" style="background:var(--surface-2);color:var(--ink)">Thêm</button></div>
+      </div>
+      <div class="sec"><h2 class="h2">Gợi ý cho bữa tối</h2><span class="xs muted">dưới 57.000đ</span></div>
+      <div class="hscroll" data-n="Gợi ý món">
+        ${sug.map((k) => { const d = DISHES[k]; const on = S.added.has(k); return `<div class="food"><div class="pw"><button class="pic" style="background:var(--${d.tag[1]}-soft)" data-go="dish" aria-label="Xem ${d.name}">${dish(k, 100)}</button><button class="add ${on ? 'done' : ''}" data-act="add" data-id="${k}" aria-label="${on ? 'Đã thêm' : 'Thêm vào bữa tối'}">${ic(on ? 'check' : 'plus', 18, 2.4)}</button></div>
+          <span class="tag ${d.tag[1]}" style="align-self:flex-start">${d.tag[0]}</span>
+          <b style="font-weight:600;font-size:14px;line-height:1.3;min-height:36px">${d.name}</b>
+          <div class="col"><span class="num" style="font-size:20px">${d.kcal} kcal</span><span class="xs muted">${d.p} g đạm · ${money(d.price)}</span></div></div>`; }).join('')}
+      </div>
+      <div class="sec"><h2 class="h2">Nước</h2><span class="xs muted"><b class="num" style="font-size:16px;color:var(--ink)">${vn(S.water * .25, 2).replace(/0$/, '')}</b> / 2 lít</span></div>
+      <div class="glass-row" data-n="Nước">${Array.from({ length: 8 }, (_, i) => `<button class="glass ${i < S.water ? 'on' : ''}" data-act="glass" data-v="${i}" aria-label="Ly ${i + 1}">${i < S.water ? ic('droplet', 14) : ic('plus', 14)}</button>`).join('')}</div>
+      <p class="xs muted">Calo là số ước tính cho một phần ăn thông thường. Gợi ý theo mục tiêu giảm cân và tiền ăn 120.000đ mỗi ngày.</p>
+    </div>
+    ${nav('meals')}`;
+  },
+});
+
+screen({
+  id: 'dish', group: 'Ăn uống', title: 'Chi tiết món', dot: 'green',
+  note: 'Công thức nấu cho một người, kèm lý do món này hợp với hôm nay của bạn.',
+  points: ['Thanh chia đạm, tinh bột, béo theo % năng lượng', 'Danh sách nguyên liệu đưa thẳng vào danh sách đi chợ'],
+  newPoints: ['Công thức nấu', 'Danh sách đi chợ'],
+  render: () => `${sb()}
+  <div class="body">
+    <div class="visual" style="background:var(--green-soft);height:270px" data-n="Ảnh món">
+      ${dish('canhchua', 220)}
+      <span class="tl">${back('meals')}</span>
+      <span class="tr"><button class="icon-btn" aria-label="Lưu món">${ic('heart', 20)}</button></span>
+      <span class="bl"><span class="pill">${ic('clock', 14)} 25 phút</span></span>
+    </div>
+    <div class="col" style="gap:8px">
+      <h1 class="h1" style="font-size:27px">Canh cá nấu chua, cơm gạo lứt</h1>
+      <div class="chips"><span class="tag green">Nhiều đạm</span><span class="tag">Món Việt</span><span class="tag">1 người</span></div>
+    </div>
+    <div class="stat4">${[['450', 'kcal'], ['32 g', 'đạm'], ['45k', 'đồng'], ['25′', 'nấu']].map(([v, l]) => `<div><span class="num">${v}</span><span>${l}</span></div>`).join('')}</div>
+    <section class="card tight" data-n="Dinh dưỡng">
+      <h2 class="h3">Năng lượng đến từ</h2>
+      <div class="stack" style="height:16px"><i style="flex:28;background:var(--red)"></i><i style="flex:52;background:var(--yellow)"></i><i style="flex:20;background:var(--blue)"></i></div>
+      <div class="stack-lg">${[['Đạm', '32 g', '28%', 'red'], ['Tinh bột', '58 g', '52%', 'yellow'], ['Chất béo', '10 g', '20%', 'blue']].map(([n, g, p, c]) => `<div><span class="nm"><i style="background:${C[c]}"></i>${n}</span><span class="num">${p}</span><span class="xs muted">${g}</span></div>`).join('')}</div>
+    </section>
+    <div class="tip"><span class="ib">${ic('target', 18)}</span><div class="col" style="gap:3px"><b class="h3">Hợp với hôm nay</b><p class="small">Vừa 530 kcal còn lại, bù thêm 32 g đạm sau buổi tập chân. Ít dầu mỡ, nhiều rau.</p></div></div>
+    <section class="card tight" data-n="Nguyên liệu">
+      <div class="row between"><h2 class="h3">Nguyên liệu</h2><span class="xs muted">khoảng 45.000đ</span></div>
+      <ul class="ingr">${[['Cá basa phi lê', '150 g'], ['Cà chua', '1 quả'], ['Dứa', '50 g'], ['Dọc mùng, giá đỗ', '80 g'], ['Me chua', '1 thìa'], ['Gạo lứt (khô)', '70 g'], ['Rau om, ngò gai', '1 nắm']].map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>
+    </section>
+    <section class="card" data-n="Cách nấu">
+      <h2 class="h3">Cách nấu</h2>
+      <ol class="steps">${['Nấu cơm gạo lứt với tỉ lệ 1 gạo, 2 nước.', 'Ướp cá với chút muối, tiêu trong 10 phút.', 'Phi thơm hành, xào cà chua, thêm 500 ml nước và me.', 'Nước sôi thì cho cá và dứa, nấu 5 phút.', 'Cho dọc mùng, giá, nêm vừa ăn rồi tắt bếp, rắc rau om.'].map((t, i) => `<li><span class="sn">${i + 1}</span><span>${t}</span></li>`).join('')}</ol>
+    </section>
+  </div>
+  <div class="actionbar" data-n="Action bar">
+    <button class="btn ghost" style="flex:1" data-act="toast" data-v="Đã thêm 7 nguyên liệu vào danh sách đi chợ">${ic('shopping-basket', 18)} Đi chợ</button>
+    <button class="btn" style="flex:1.5" data-act="add" data-id="canhchua" data-then="meals">${ic('plus', 18)} Thêm vào bữa tối</button>
+    ${homeInd()}
+  </div>`,
+});
+
+screen({
+  id: 'scan', group: 'Ăn uống', title: 'Chụp món ăn', dot: 'green', cam: true,
+  note: 'Chụp xong là có ngay tên món, calo theo khẩu phần và một lời khuyên cụ thể cho phần còn lại của ngày.',
+  points: ['Khoảng calo thay vì một con số tuyệt đối, vì món Việt thay đổi theo quán', 'Chọn khẩu phần nhỏ, vừa, lớn', 'Gợi ý món gần giống nếu AI nhận sai'],
+  render: () => {
+    const k = [380, 450, 560][S.portion];
+    return `<div class="camview" style="height:440px;background:linear-gradient(180deg,#3A2E26 0%,#2B221C 100%)" data-n="Camera">
+      <svg width="390" height="440" viewBox="0 0 390 440" aria-hidden="true" style="position:absolute;inset:0">
+        ${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="0" y="${i * 76}" width="390" height="74" fill="#000" opacity="${0.05 + (i % 2) * 0.05}"/>`).join('')}
+        <g transform="translate(85 110) scale(2.2)">${dish('pho', 100).replace(/<\/?svg[^>]*>/g, '')}</g>
+      </svg>
+      ${sb('clear')}
+      <div class="cam-top"><button class="icon-btn" data-go="meals" aria-label="Đóng">${ic('x', 22)}</button><div class="cam-title"><p class="h3">Chụp món ăn</p></div><button class="icon-btn" aria-label="Bật đèn flash">${ic('zap', 20)}</button></div>
+      <svg width="390" height="440" viewBox="0 0 390 440" aria-hidden="true" style="position:absolute;inset:0"><g stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none"><path d="M70 130 v-26 h26"/><path d="M320 130 v-26 h-26"/><path d="M70 330 v26 h26"/><path d="M320 330 v26 h-26"/></g></svg>
+      <span class="tag" style="position:absolute;left:50%;transform:translateX(-50%);top:372px;background:#11A068;color:#fff;height:30px;font-size:13px">${ic('circle-check', 15)} Phở bò · chắc 94%</span>
+    </div>
+    <div class="sheet" style="margin-top:-6px" data-n="Kết quả">
+      <i class="handle"></i>
+      <div class="row between" style="align-items:flex-end">
+        <div class="col" style="gap:4px"><h2 class="h2" style="font-size:22px">Phở bò tái</h2><p><span class="num" style="font-size:48px">${k}</span><span class="small muted"> kcal · khoảng ${k - 50}–${k + 70}</span></p></div>
+      </div>
+      <div class="seg" style="background:var(--surface)">${['Bát nhỏ', 'Bát vừa', 'Bát lớn'].map((t, i) => `<button class="${S.portion === i ? 'on' : ''}" data-act="portion" data-v="${i}">${t}</button>`).join('')}</div>
+      <div class="stack-lg">${[['Đạm', [22, 28, 35][S.portion], 'red'], ['Tinh bột', [48, 58, 74][S.portion], 'yellow'], ['Chất béo', [12, 14, 18][S.portion], 'blue']].map(([n, v, c]) => `<div style="background:var(--surface);border-radius:14px;padding:10px"><span class="nm"><i style="background:${C[c]}"></i>${n}</span><span class="num">${v} g</span></div>`).join('')}</div>
+      <div class="tip" style="background:var(--yellow-soft)"><span class="ib" style="background:var(--yellow);color:#14161A">${ic('info', 18)}</span><p class="small">Bát phở chiếm ${Math.round(k / 1650 * 100)}% calo cả ngày và khá mặn. Uống thêm 2 ly nước, bữa tối chọn món nhiều rau.</p></div>
+      <p class="xs muted">Không phải món này? <button class="link" style="font-size:12px;text-decoration:underline">Bún bò Huế</button> · <button class="link" style="font-size:12px;text-decoration:underline">Hủ tiếu</button> · <button class="link" style="font-size:12px;text-decoration:underline">Bánh canh</button></p>
+      <button class="btn wide" data-act="toast" data-v="Đã thêm Phở bò tái vào bữa trưa" data-then="meals">${ic('plus', 18)} Thêm vào bữa trưa</button>
+    </div>
+    <i class="home-ind dark"></i>`;
+  },
+});
+
+screen({
+  id: 'progress', group: 'Màn chính', title: 'Tiến độ', dot: 'yellow', nav: 'progress',
+  note: 'Cân nặng, lịch tháng, cân bằng nhóm cơ, số đo và kỷ lục ở một nơi. Lịch tháng tô màu theo nhóm cơ đã tập.',
+  points: ['Đường mục tiêu nét đứt trên biểu đồ cân nặng', 'Nhắc nhóm cơ còn thiếu trong tuần', 'Số đo vòng eo, mông, % mỡ'],
+  newPoints: ['Số đo cơ thể', 'Kỷ lục cá nhân'],
+  render: () => {
+    const pts = [[0, 64], [7, 63.6], [14, 63.3], [21, 63.1], [28, 62.6], [35, 62.4], [42, 61.9], [49, 61.8], [51, 61.4]];
+    const X = (d) => 34 + d / 51 * 286, Y = (w) => 12 + (65 - w) / 8 * 128;
+    const line = pts.map(([d, w], i) => `${i ? 'L' : 'M'}${X(d).toFixed(1)} ${Y(w).toFixed(1)}`).join(' ');
+    const gid = 'wg' + (++uid);
+    const cal = []; const plan = { 1: 'legs', 3: 'core', 5: 'full', 7: 'upper', 8: 'legs', 10: 'core', 12: 'full', 14: 'upper', 15: 'legs', 17: 'core', 19: 'full', 21: 'upper' };
+    for (let i = 0; i < 3; i++) cal.push('<span></span>');
+    for (let d = 1; d <= 31; d++) {
+      const g = plan[d];
+      cal.push(d === 22 ? `<span class="c now">${d}</span>` : g ? `<span class="c tr" style="background:${C[GROUP[g].c]}">${d}</span>` : d < 22 ? `<span class="c rest">${d}</span>` : `<span class="c">${d}</span>`);
+    }
+    return `${sb()}
+    <div class="body">
+      <header class="row between"><h1 class="h1">Tiến độ</h1><button class="icon-btn" aria-label="Chia sẻ">${ic('share-2', 20)}</button></header>
+      <div class="seg"><button>Tuần</button><button class="on">Tháng</button><button>3 tháng</button></div>
+      <div class="stat3">${[['flame', '12', 'buổi liền', 'red'], ['dumbbell', '12', 'buổi tháng 10', 'blue'], ['zap', '3.480', 'kcal đã đốt', 'yellow']].map(([i, v, l, c]) => `<div><span style="color:var(--${c}-ink)">${ic(i, 18)}</span><span class="num">${v}</span><span class="xs muted">${l}</span></div>`).join('')}</div>
+      <section class="card" data-n="Cân nặng">
+        <div class="row between" style="align-items:flex-start">
+          <div><p class="lbl">Cân nặng</p><p><span class="num" style="font-size:44px">61,4</span><span class="small muted"> kg</span></p><span class="delta">${ic('trending-down', 14)} 2,6 kg từ 1/9</span></div>
+          <button class="btn sm ghost">${ic('plus', 16)} Ghi cân</button>
+        </div>
+        <svg width="100%" viewBox="0 0 330 168" aria-label="Biểu đồ cân nặng từ 64 kg xuống 61,4 kg trong 7 tuần">
+          <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2C6BEF" stop-opacity="0.22"/><stop offset="1" stop-color="#2C6BEF" stop-opacity="0"/></linearGradient></defs>
+          ${[64, 62, 60, 58].map((w) => `<line x1="34" x2="322" y1="${Y(w)}" y2="${Y(w)}" stroke="var(--line)" stroke-width="1"/><text x="0" y="${Y(w) + 4}" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="var(--ink-3)">${w} kg</text>`).join('')}
+          <line x1="34" x2="322" y1="${Y(58)}" y2="${Y(58)}" stroke="var(--green)" stroke-width="2" stroke-dasharray="5 5"/>
+          <text x="322" y="${Y(58) - 6}" text-anchor="end" font-family="Be Vietnam Pro" font-weight="600" font-size="11" fill="var(--green-ink)">Mục tiêu 58 kg</text>
+          <path d="${line} L${X(51)} ${Y(57)} L${X(0)} ${Y(57)} Z" fill="url(#${gid})"/>
+          <path d="${line}" fill="none" stroke="var(--blue)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+          ${pts.map(([d, w], i) => `<circle cx="${X(d)}" cy="${Y(w)}" r="${i === pts.length - 1 ? 5.5 : 3}" fill="${i === pts.length - 1 ? 'var(--blue)' : 'var(--surface)'}" stroke="var(--blue)" stroke-width="2"/>`).join('')}
+          ${[[0, '1/9'], [14, '15/9'], [28, '29/9'], [42, '13/10'], [51, '22/10']].map(([d, t], i) => `<text x="${X(d)}" y="164" text-anchor="${i === 4 ? 'end' : i === 0 ? 'start' : 'middle'}" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="var(--ink-3)">${t}</text>`).join('')}
+        </svg>
+      </section>
+      <section class="card" data-n="Lịch tháng">
+        <div class="row between"><h2 class="h3">Tháng 10</h2><span class="xs muted">12 buổi · chưa lỡ buổi nào</span></div>
+        <div class="cal">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d) => `<span class="wd">${d}</span>`).join('')}${cal.join('')}</div>
+        <div class="legend">${Object.values(GROUP).map((g) => `<span><i style="background:${C[g.c]}"></i>${g.name}</span>`).join('')}</div>
+      </section>
+      <section class="card" data-n="Cân bằng nhóm cơ">
+        <div class="row between"><h2 class="h3">Nhóm cơ tuần này</h2><span class="xs muted">số hiệp</span></div>
+        ${[['Chân & mông', 14, 'red'], ['Thân trên', 12, 'blue'], ['Toàn thân', 9, 'green'], ['Bụng', 3, 'yellow']].map(([n, v, c]) => `<div class="mbar" style="grid-template-columns:104px 1fr 30px"><span>${n}</span><div class="bar" style="height:12px"><i style="width:${v / 16 * 100}%;background:${C[c]}"></i></div><span>${v}</span></div>`).join('')}
+        <p class="small row" style="gap:8px;background:var(--yellow-soft);padding:10px 12px;border-radius:14px;align-items:flex-start"><span style="color:var(--yellow-ink)">${ic('info', 16)}</span>Bụng mới có 3 hiệp. Buổi thứ Bảy tập Bụng & cardio sẽ bù lại.</p>
+      </section>
+      <section class="card" data-n="Số đo">
+        <div class="row between"><h2 class="h3">Số đo cơ thể</h2><button class="link">Cập nhật ${ic('pencil', 14)}</button></div>
+        <div class="meas">${[['Vòng eo', '68', 'cm', '3 cm'], ['Vòng mông', '92', 'cm', '1 cm'], ['Mỡ cơ thể', '26', '%', '2%']].map(([n, v, u, d]) => `<div><span class="xs muted">${n}</span><span class="num">${v}<small style="font-size:14px;color:var(--ink-3)"> ${u}</small></span><span class="delta">${ic('trending-down', 13)} ${d}</span></div>`).join('')}</div>
+      </section>
+      <section class="card tight" data-n="Kỷ lục">
+        <h2 class="h3">Kỷ lục cá nhân</h2>
+        <div>${[['squat', 'Squat', '3 × 18 lần', 'red', '22/10'], ['plank', 'Plank', '1:45', 'yellow', '17/10'], ['hipthrust', 'Hip thrust', '4 × 14 · 8 kg', 'red', '15/10']].map(([p, n, v, c, d]) => `<div class="pr"><span class="thumb" style="background:var(--${c}-soft);width:46px;height:46px;border-radius:13px">${pose(p, 36, `var(--${c}-ink)`)}</span><span class="grow col"><b style="font-weight:600">${n}</b><span class="xs muted">${d}</span></span><span class="num" style="font-size:22px">${v}</span></div>`).join('')}</div>
+      </section>
+    </div>
+    ${nav('progress')}`;
+  },
+});
+
+screen({
+  id: 'health', group: 'Tính năng mới', title: 'Sức khỏe', dot: 'yellow', isNew: true,
+  note: 'Gom giấc ngủ, nhịp tim, nước và cảm nhận thành một điểm sẵn sàng tập. Điểm thấp thì lịch tập tự nhẹ đi.',
+  points: ['Điểm sẵn sàng 0–100 và ba yếu tố tạo nên nó', 'Biểu đồ giai đoạn ngủ', 'Nhắc uống nước theo giờ', 'Đồng bộ Apple Sức khỏe, Google Fit, đồng hồ'],
+  newPoints: ['Toàn bộ màn này là tính năng mới'],
+  render: () => {
+    const score = 78, a0 = Math.PI, a1 = Math.PI + Math.PI * score / 100;
+    const R = 92, cx = 110, cy = 104;
+    const pt = (a) => `${(cx + R * Math.cos(a)).toFixed(1)} ${(cy + R * Math.sin(a)).toFixed(1)}`;
+    const hyp = [[1, 10], [2, 30], [3, 45], [2, 40], [0, 20], [2, 35], [3, 30], [2, 45], [0, 30], [2, 50], [3, 20], [0, 35], [2, 35], [1, 15]];
+    const tot = hyp.reduce((a, [, m]) => a + m, 0);
+    const lv = [{ n: 'REM', c: 'var(--green)', y: 22 }, { n: 'Thức', c: 'var(--yellow)', y: 0 }, { n: 'Nông', c: 'var(--blue-2)', y: 44 }, { n: 'Sâu', c: 'var(--blue)', y: 66 }];
+    let x = 0;
+    const hypSvg = hyp.map(([l, m]) => { const w = m / tot * 350; const r = `<rect x="${x.toFixed(1)}" y="${lv[l].y}" width="${(w - 1.5).toFixed(1)}" height="20" rx="4" fill="${lv[l].c}"/>`; x += w; return r; }).join('');
+    return `${sb()}
+    <div class="body">
+      <header class="row">${back('home')}<h1 class="h1 grow" style="font-size:26px">Sức khỏe</h1><button class="icon-btn" aria-label="Kết nối thiết bị">${ic('watch', 20)}</button></header>
+      <section class="card hero" style="align-items:center;text-align:center" data-n="Điểm sẵn sàng">
+        <p class="lbl">Mức sẵn sàng hôm nay</p>
+        <svg width="220" height="120" viewBox="0 0 220 120" aria-label="Điểm sẵn sàng ${score} trên 100">
+          <path d="M ${pt(a0)} A ${R} ${R} 0 0 1 ${pt(0)}" fill="none" stroke="var(--hero-2)" stroke-width="16" stroke-linecap="round"/>
+          <path d="M ${pt(a0)} A ${R} ${R} 0 0 1 ${pt(a1)}" fill="none" stroke="var(--green)" stroke-width="16" stroke-linecap="round"/>
+          <text x="110" y="98" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="64" fill="var(--on-hero)">${score}</text>
+        </svg>
+        <p class="h3">Sẵn sàng tập vừa sức</p>
+        <p class="small muted" style="max-width:280px">Giữ nguyên buổi Thân dưới. Nếu chân còn mỏi, giảm Hip thrust xuống 3 hiệp.</p>
+        <div class="factors" style="width:100%">${[['Giấc ngủ', 'Tốt', 'green'], ['Nhịp tim', 'Bình thường', 'green'], ['Cơ chân', 'Hơi mỏi', 'yellow']].map(([n, v, c]) => `<div style="text-align:left"><span class="xs muted">${n}</span><b style="color:var(--${c === 'green' ? 'on-hero' : 'on-hero'})"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${C[c]};margin-right:6px;vertical-align:1px"></i>${v}</b></div>`).join('')}</div>
+      </section>
+      <section class="card" data-n="Giấc ngủ">
+        <div class="row between" style="align-items:flex-start"><div><p class="lbl">Giấc ngủ đêm qua</p><p><span class="num" style="font-size:40px">7</span><span class="small muted">giờ </span><span class="num" style="font-size:40px">20</span><span class="small muted">phút</span></p></div><span class="tag green">Đủ giấc</span></div>
+        <svg width="100%" viewBox="0 0 350 104" aria-label="Biểu đồ giai đoạn ngủ">${hypSvg}<text x="0" y="102" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="var(--ink-3)">23:10</text><text x="175" y="102" text-anchor="middle" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="var(--ink-3)">02:50</text><text x="350" y="102" text-anchor="end" font-family="Barlow Condensed" font-weight="600" font-size="12" fill="var(--ink-3)">06:30</text></svg>
+        <div class="legend">${[['Sâu', 'blue', '1g 35p'], ['Nông', 'blue-2', '4g 05p'], ['REM', 'green', '1g 25p'], ['Thức', 'yellow', '15p']].map(([n, c, v]) => `<span><i style="background:var(--${c})"></i>${n} <b style="color:var(--ink);font-weight:600">${v}</b></span>`).join('')}</div>
+      </section>
+      <div class="grid2">
+        <section class="tile" data-n="Nước">
+          <div class="tile-h"><span class="ib" style="background:var(--blue-soft);color:var(--blue-ink)">${ic('droplets', 16)}</span>Nước</div>
+          <span class="num">${vn(S.water * .25, 2).replace(/0$/, '')}<small>/ 2 lít</small></span>
+          <div class="glasses">${Array.from({ length: 8 }, (_, i) => `<i class="${i < S.water ? 'on' : ''}"></i>`).join('')}</div>
+          <button class="mini-btn" data-act="water" style="align-self:flex-start">${ic('plus', 14, 2.4)} 250 ml</button>
+        </section>
+        <section class="tile" data-n="Nhịp tim">
+          <div class="tile-h"><span class="ib" style="background:var(--red-soft);color:var(--red-ink)">${ic('heart-pulse', 16)}</span>Nhịp tim nghỉ</div>
+          <span class="num">64<small>bpm</small></span>
+          <div style="display:flex;align-items:flex-end;gap:5px;height:44px;margin-top:auto">${[66, 65, 67, 64, 63, 65, 64].map((v, i) => `<i style="flex:1;height:${(v - 58) * 4.5}px;border-radius:3px;background:${i === 6 ? 'var(--red)' : 'var(--red-soft)'}"></i>`).join('')}</div>
+          <span class="xs muted">7 ngày, thấp là tốt</span>
+        </section>
+      </div>
+      <section class="card tight" data-n="Cảm nhận">
+        <h2 class="h3">Hôm nay bạn thấy thế nào?</h2>
+        <div class="chipset">${['Mệt', 'Bình thường', 'Khỏe', 'Rất khỏe'].map((t, i) => `<button class="choice ${S.mood === i ? 'on' : ''}" data-act="mood" data-v="${i}">${t}</button>`).join('')}</div>
+      </section>
+      <section class="list-card" data-n="Nhắc nhở & thiết bị">
+        <div class="lrow"><span class="li">${ic('bell', 18)}</span><span class="grow col"><b style="font-weight:600">Nhắc uống nước</b><span class="xs muted">Mỗi 90 phút, 8:00–21:00</span></span><button class="toggle ${S.waterRemind ? 'on' : ''}" data-act="tg" data-v="waterRemind" role="switch" aria-checked="${S.waterRemind}" aria-label="Nhắc uống nước"><i></i></button></div>
+        <div class="lrow"><span class="li">${ic('heart-pulse', 18)}</span><span class="grow col"><b style="font-weight:600">Apple Sức khỏe</b><span class="xs muted">Bước chân, nhịp tim, giấc ngủ</span></span><span class="tag green">Đã kết nối</span></div>
+        <div class="lrow"><span class="li">${ic('activity', 18)}</span><span class="grow col"><b style="font-weight:600">Google Fit</b><span class="xs muted">Dành cho Android</span></span><button class="mini-btn" style="background:var(--surface-2);color:var(--ink)">Kết nối</button></div>
+        <div class="lrow"><span class="li">${ic('watch', 18)}</span><span class="grow col"><b style="font-weight:600">Đồng hồ thông minh</b><span class="xs muted">Garmin, Xiaomi, Huawei</span></span><button class="mini-btn" style="background:var(--surface-2);color:var(--ink)">Kết nối</button></div>
+      </section>
+    </div>
+    ${homeInd()}`;
+  },
+});
+
+screen({
+  id: 'challenges', group: 'Tính năng mới', title: 'Thử thách', dot: 'yellow', isNew: true,
+  note: 'Thử thách với bạn bè để giữ động lực. Huy hiệu có hình đĩa tạ, đủ điều kiện thì đĩa sáng màu.',
+  points: ['Thử thách đang tham gia với tiến độ từng ngày', 'Bảng xếp hạng nhóm bạn', 'Huy hiệu đã đạt và chưa đạt', 'Thử thách gần gũi như “Không trà sữa 7 ngày”'],
+  newPoints: ['Toàn bộ màn này là tính năng mới'],
+  render: () => `${sb()}
+  <div class="body">
+    <header class="row">${back('home')}<h1 class="h1 grow" style="font-size:26px">Thử thách</h1><button class="icon-btn" aria-label="Mời bạn">${ic('users', 20)}</button></header>
+    <section class="card hero" data-n="Thử thách đang tham gia">
+      <div class="row between"><p class="lbl">Đang tham gia · Ngày 12/30</p><span class="tag on-hero">${ic('users', 13)} 4 người</span></div>
+      <div class="col" style="gap:4px"><h2 class="h1" style="font-size:28px">8.000 bước mỗi ngày</h2><p class="small muted">Còn 18 ngày · Hôm nay còn 1.158 bước</p></div>
+      <div class="pips">${Array.from({ length: 30 }, (_, i) => `<i class="${i < 11 ? 'on' : i === 11 ? 'now' : ''}"></i>`).join('')}</div>
+      <div class="row between"><span class="small muted">11 ngày đạt, chưa lỡ ngày nào</span><span class="num" style="font-size:26px">Hạng 2</span></div>
+    </section>
+    <section class="list-card" style="padding:4px 16px" data-n="Bảng xếp hạng">
+      ${[['1', 'HL', 'Hoàng Long', '9.420', 'blue'], ['2', 'MA', 'Bạn', '8.310', 'yellow'], ['3', 'TT', 'Thu Trang', '7.980', 'green'], ['4', 'QB', 'Quốc Bảo', '6.105', 'red']].map(([r, a, n, v, c]) => `<div class="rank ${n === 'Bạn' ? 'me' : ''}"><span class="rn">${r}</span><span class="av-sm" style="background:${C[c]}">${a}</span><span class="grow col"><b style="font-weight:600">${n}</b><span class="xs muted">bước trung bình/ngày</span></span><span class="num" style="font-size:22px">${v}</span></div>`).join('')}
+    </section>
+    <div class="sec"><h2 class="h2">Huy hiệu</h2><span class="xs muted">5 đã đạt</span></div>
+    <div class="badges" data-n="Huy hiệu">
+      ${[['red', 'Chuỗi 7 buổi', 1], ['blue', '100 lần squat', 1], ['green', 'Ngủ đủ 5 đêm', 1], ['yellow', 'Uống đủ nước 7 ngày', 1], ['red', 'Giảm 2 kg', 1], ['blue', 'Chuỗi 30 buổi', 0]].map(([c, t, on]) => `<div class="badge ${on ? '' : 'lock'}"><svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" fill="${on ? C[c] : 'var(--surface-2)'}"/><circle cx="28" cy="28" r="18" fill="none" stroke="${on ? '#FFFFFF' : 'var(--line)'}" stroke-opacity="${on ? 0.35 : 1}" stroke-width="2"/><circle cx="28" cy="28" r="6.5" fill="${on ? '#14161A' : 'var(--line)'}" fill-opacity="${on ? 0.55 : 1}"/><circle cx="28" cy="28" r="3" fill="${on ? '#FFFFFF' : 'var(--surface)'}"/></svg>${t}</div>`).join('')}
+    </div>
+    <div class="sec"><h2 class="h2">Tham gia thêm</h2></div>
+    <div class="col" style="gap:8px">
+      ${[['timer', 'yellow', 'Plank mỗi ngày', '21 ngày · thêm 5 giây/ngày', '1.240 người'], ['moon', 'blue', 'Ngủ trước 23 giờ', '14 ngày · đo bằng điện thoại', '860 người'], ['leaf', 'green', 'Không trà sữa', '7 ngày · tiết kiệm ~200.000đ', '3.105 người']].map(([i, c, t, d, p]) => `<div class="ch-card"><span class="ch-ic" style="background:var(--${c}-soft);color:var(--${c}-ink)">${ic(i, 22)}</span><span class="grow col" style="gap:2px"><b style="font-weight:600">${t}</b><span class="xs muted">${d}</span><span class="xs muted">${p} đang tham gia</span></span><button class="mini-btn" style="background:var(--cta);color:var(--on-cta)" data-act="join">Tham gia</button></div>`).join('')}
+    </div>
+  </div>
+  ${homeInd()}`,
+});
+
+screen({
+  id: 'profile', group: 'Cá nhân', title: 'Hồ sơ', dot: 'green',
+  note: 'Hồ sơ và cài đặt gom thành ba nhóm: kế hoạch, sức khỏe, ứng dụng. Đổi giao diện sáng tối ngay tại đây.',
+  points: ['Chỉ số BMI tính sẵn', 'Gói Pro cho lịch tập do HLV thật duyệt', 'Lối vào Sức khỏe và Thử thách', 'Nút Sáng/Tối đổi giao diện cả bản demo'],
+  newPoints: ['Gói FitCoach Pro', 'Giao diện tối'],
+  render: () => {
+    const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const row = (i, t, v, go) => `<button class="lrow" style="width:100%" ${go ? `data-go="${go}"` : ''}><span class="li">${ic(i, 18)}</span><span class="grow" style="font-weight:600">${t}</span><span class="v">${v}</span>${ic('chevron-right', 18)}</button>`;
+    return `${sb()}
+    <div class="body">
+      <header class="row">${back('home')}<h1 class="h1 grow" style="font-size:26px">Hồ sơ</h1><button class="icon-btn" aria-label="Cài đặt">${ic('settings', 20)}</button></header>
+      <div class="prof" data-n="Thông tin"><span class="avatar">MA</span><h2 class="h2" style="font-size:22px">Nguyễn Minh Anh</h2><p class="small muted">Tập cùng FitCoach từ tháng 9/2026</p><div class="chips" style="justify-content:center"><span class="tag red">Giảm cân</span><span class="tag">Mới bắt đầu</span><span class="tag">Tập ở nhà</span></div></div>
+      <div class="stat-row">${[['160', 'cm'], ['61,4', 'kg'], ['24', 'tuổi'], ['24,0', 'BMI']].map(([v, l]) => `<div><span class="num">${v}</span><span>${l}</span></div>`).join('')}</div>
+      <section class="card hero" style="flex-direction:row;align-items:center;gap:14px" data-n="Pro">
+        <span class="ch-ic" style="background:var(--yellow);color:#14161A">${ic('crown', 24)}</span>
+        <div class="grow col" style="gap:3px"><b class="h3">FitCoach Pro</b><span class="xs muted">HLV thật duyệt lịch tập, thực đơn cả tuần, không quảng cáo</span></div>
+        <button class="btn sm light" style="height:38px;padding:0 14px">Dùng thử</button>
+      </section>
+      <p class="lbl" style="margin:6px 0 -4px 4px">Kế hoạch</p>
+      <section class="list-card">${row('target', 'Mục tiêu', 'Giảm cân · 58 kg', 'setup')}${row('calendar-days', 'Lịch tập', '4 buổi/tuần · 40 phút')}${row('dumbbell', 'Nơi tập, dụng cụ', 'Ở nhà · tạ 4 kg')}${row('wallet', 'Tiền ăn mỗi ngày', '120.000đ')}</section>
+      <p class="lbl" style="margin:6px 0 -4px 4px">Sức khỏe</p>
+      <section class="list-card">${row('heart-pulse', 'Sức khỏe', 'Sẵn sàng 78', 'health')}${row('trophy', 'Thử thách', '1 đang tham gia', 'challenges')}${row('watch', 'Thiết bị', 'Apple Sức khỏe')}</section>
+      <p class="lbl" style="margin:6px 0 -4px 4px">Ứng dụng</p>
+      <section class="list-card">
+        <div class="lrow"><span class="li">${ic('bell', 18)}</span><span class="grow col"><b style="font-weight:600">Nhắc giờ tập</b><span class="xs muted">19:00 · T2, T4, T5, T7</span></span><button class="toggle ${S.remind ? 'on' : ''}" data-act="tg" data-v="remind" role="switch" aria-checked="${S.remind}" aria-label="Nhắc giờ tập"><i></i></button></div>
+        <div class="lrow"><span class="li">${ic('volume-2', 18)}</span><span class="grow" style="font-weight:600">Giọng đọc hướng dẫn</span><span class="v">Tiếng Việt, nữ</span></div>
+        <div class="lrow"><span class="li">${ic(dark ? 'moon' : 'sun', 18)}</span><span class="grow" style="font-weight:600">Giao diện</span><div class="seg" style="background:var(--surface-2);padding:3px"><button class="${dark ? '' : 'on'}" style="height:32px" data-act="theme" data-v="light">Sáng</button><button class="${dark ? 'on' : ''}" style="height:32px" data-act="theme" data-v="dark">Tối</button></div></div>
+        <div class="lrow"><span class="li">${ic('shield-check', 18)}</span><span class="grow col"><b style="font-weight:600">Quyền riêng tư</b><span class="xs muted">Camera và ảnh món ăn xử lý trên máy</span></span>${ic('chevron-right', 18)}</div>
+      </section>
+      <button class="btn line" style="color:var(--red-ink)">${ic('log-out', 18)} Đăng xuất</button>
+    </div>
+    ${homeInd()}`;
+  },
+});
+
+// ---------- Hệ thống thiết kế (bảng tham chiếu cho Figma) ----------
+function guide() {
+  const sw = [['Phấn', '--bg', 'Nền ứng dụng'], ['Trắng', '--surface', 'Thẻ'], ['Phấn đậm', '--surface-2', 'Ô phụ, thanh nền'], ['Cao su', '--ink', 'Chữ, nút chính, thẻ chính'], ['Chì', '--ink-2', 'Chữ phụ'], ['Đường kẻ', '--line', 'Viền, vạch chia']];
+  const pl = [['Đỏ 25 kg', 'red', 'Calo đốt · Chân & mông · Đạm'], ['Xanh dương 20 kg', 'blue', 'Nước · Thân trên · Chất béo'], ['Vàng 15 kg', 'yellow', 'Phút tập · Bụng · Tinh bột'], ['Xanh lá 10 kg', 'green', 'Bước chân · Toàn thân · Hoàn thành']];
+  const hex = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const icons = ['house', 'dumbbell', 'utensils', 'chart-line', 'scan-line', 'flame', 'footprints', 'droplet', 'moon', 'heart-pulse', 'scale', 'camera', 'timer', 'trophy', 'sparkles', 'wallet', 'bell', 'play', 'check', 'plus'];
+  return `<div class="g-wrap" data-n="Hệ thống thiết kế">
+    <div class="row between" style="align-items:flex-end;flex-wrap:wrap"><div><p class="lbl">FitCoach · Hệ thống thiết kế</p><h1 class="h1" style="font-size:40px;margin-top:6px">Phấn, cao su và đĩa tạ</h1></div><p class="small muted" style="max-width:420px">Nền màu phấn, chữ và nút màu cao su lót sàn. Bốn màu đĩa tạ thi đấu mã hoá mọi chỉ số, nhóm cơ và chất dinh dưỡng, dùng nhất quán trên mọi màn.</p></div>
+    <div class="g-sec"><p class="lbl">Màu nền và chữ</p><div class="g-sw">${sw.map(([n, v, d]) => `<div><i style="background:var(${v});box-shadow:inset 0 -1px 0 var(--line)"></i><p><b>${n}</b><span>${hex(v).toUpperCase()}</span><br><span style="font-family:var(--f-ui);font-weight:400;letter-spacing:0">${d}</span></p></div>`).join('')}</div></div>
+    <div class="g-sec"><p class="lbl">Màu đĩa tạ</p><div class="g-sw" style="grid-template-columns:repeat(4,1fr)">${pl.map(([n, c, d]) => `<div><i style="background:var(--${c});height:96px"></i><p><b>${n}</b><span>${hex('--' + c).toUpperCase()} · nền ${hex('--' + c + '-soft').toUpperCase()}</span><br><span style="font-family:var(--f-ui);font-weight:400;letter-spacing:0">${d}</span></p></div>`).join('')}</div></div>
+    <div class="g-sec"><p class="lbl">Chữ</p><div class="g-type">
+      <div><span class="small muted">Số lớn · Barlow Condensed 700 · 64</span><span class="num" style="font-size:64px">6.842</span></div>
+      <div><span class="small muted">Tiêu đề trang · Be Vietnam Pro 800 · 30</span><span class="h1">Thân dưới · Sức mạnh</span></div>
+      <div><span class="small muted">Tiêu đề mục · Be Vietnam Pro 700 · 19</span><span class="h2">Gợi ý cho bữa tối</span></div>
+      <div><span class="small muted">Nội dung · Be Vietnam Pro 400 · 15</span><span>Đẩy hông ra sau như đang ngồi xuống ghế, hạ đến khi đùi song song mặt sàn.</span></div>
+      <div><span class="small muted">Nhãn · Barlow Condensed 600 · 13 · in hoa</span><span class="lbl">Thanh đòn hôm nay</span></div>
+    </div></div>
+    <div class="g-sec"><p class="lbl">Thành phần</p><div class="g-comp">
+      <div class="g-box"><p class="small muted">Nút</p><button class="btn">${ic('play', 18)} Bắt đầu</button><button class="btn ghost">${ic('camera', 18)} Camera AI</button><button class="btn line">Kết thúc buổi tập</button></div>
+      <div class="g-box"><p class="small muted">Nhãn và lựa chọn</p><div class="chips"><span class="tag red">Chân & mông</span><span class="tag blue">Thân trên</span><span class="tag yellow">Bụng</span><span class="tag green">Toàn thân</span><span class="tag">Không dụng cụ</span></div><div class="seg"><button class="on">Hôm nay</button><button>Lịch tuần</button><button>Thư viện</button></div><div class="chipset"><button class="choice on">Vừa sức</button><button class="choice">Khá nặng</button></div></div>
+      <div class="g-box" style="background:var(--hero);color:var(--on-hero)"><p class="small" style="color:var(--on-hero-2)">Thanh đòn: % hoàn thành</p>${barbell([{ c: 'red', pct: .69 }, { c: 'green', pct: .86 }, { c: 'yellow', pct: .53 }, { c: 'blue', pct: .63 }], { w: 260 })}<p class="small" style="color:var(--on-hero-2)">Thanh đòn: bài đã xong</p>${barbell([{ c: 'red', pct: 1 }, { c: 'red', pct: 1 }, { outline: true }, { outline: true }, { outline: true }], { w: 260, h: 92, pw: 22, ph: 84 })}</div>
+      <div class="g-box"><p class="small muted">Dòng bài tập</p><div class="ex"><span class="ex-main"><span class="thumb" style="background:var(--red-soft)">${pose('squat', 46, 'var(--red-ink)')}</span><span class="ex-txt"><b>Squat</b><span class="ex-amt">3 × 15 lần</span><span class="ex-meta"><span>nghỉ 60s</span><span class="ai">${ic('camera', 12, 2.4)} AI</span></span></span></span><span class="chk">${ic('check', 18, 3)}</span></div><div class="ex done"><span class="ex-main"><span class="thumb" style="background:var(--yellow-soft)">${pose('plank', 46, 'var(--yellow-ink)')}</span><span class="ex-txt"><b>Plank</b><span class="ex-amt">3 × 40 giây</span></span></span><span class="chk">${ic('check', 18, 3)}</span></div></div>
+      <div class="g-box"><p class="small muted">Tư thế minh hoạ</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${Object.keys(POSES).map((p) => `<span class="thumb" style="background:var(--surface);width:100%;height:64px">${pose(p, 48)}</span>`).join('')}</div></div>
+      <div class="g-box"><p class="small muted">Món ăn minh hoạ</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${['oats', 'comga', 'canhchua', 'salad', 'dauhu', 'pho', 'gaapchao', 'milk'].map((k) => `<span style="display:grid;place-items:center">${dish(k, 62)}</span>`).join('')}</div></div>
+    </div></div>
+    <div class="g-sec"><p class="lbl">Biểu tượng · Lucide, nét 2 px</p><div class="g-icons">${icons.map((n) => `<div>${ic(n, 24)}<span>${n}</span></div>`).join('')}</div></div>
+  </div>`;
+}
+
+// ---------- Điều khiển demo ----------
+const app = document.getElementById('app');
+let current = 'home';
+
+function renderScreen(id) {
+  const s = SCREENS.find((x) => x.id === id);
+  const el = document.createElement('section');
+  el.className = 'scr' + (s.cam ? ' cam' : '');
+  el.id = 's-' + id;
+  el.dataset.n = s.title;
+  el.innerHTML = s.render();
+  return el;
+}
+function hydrate(root) {
+  root.querySelectorAll('svg[data-i]').forEach((el) => { el.outerHTML = ic(el.dataset.i, +el.getAttribute('width') || 20); });
+}
+function show(id, keepScroll) {
+  if (id === 'guide') return showGuide();
+  if (!SCREENS.some((s) => s.id === id)) id = 'home';
+  document.getElementById('d-guide').hidden = true;
+  document.getElementById('d-phone-wrap').hidden = false;
+  const old = app.querySelector('.scr');
+  const top = keepScroll && old ? old.scrollTop : 0;
+  app.querySelectorAll('.scr').forEach((n) => n.remove());
+  const el = renderScreen(id);
+  app.prepend(el);
+  el.scrollTop = top;
+  current = id;
+  markList();
+  notes();
+  try { history.replaceState(null, '', '#' + id); } catch (e) { /* khung xem có thể chặn */ }
+}
+function showGuide() {
+  current = 'guide';
+  document.getElementById('d-phone-wrap').hidden = true;
+  const g = document.getElementById('d-guide');
+  g.hidden = false;
+  g.innerHTML = guide();
+  markList();
+  notes();
+  try { history.replaceState(null, '', '#guide'); } catch (e) { /* bỏ qua */ }
+}
+const rerender = () => current === 'guide' ? showGuide() : show(current, true);
+
+function list(targetId) {
+  const groups = [...new Set(SCREENS.map((s) => s.group))];
+  document.getElementById(targetId).innerHTML = groups.map((g) => `<div class="d-group" style="margin-bottom:14px"><h3>${g}</h3>${SCREENS.filter((s) => s.group === g).map((s) =>
+    `<button data-screen="${s.id}"><i class="d-dot" style="background:${C[s.dot]}"></i>${s.title}${s.isNew ? '<span class="d-new">Mới</span>' : ''}</button>`).join('')}</div>`).join('') +
+    `<div class="d-group"><h3>Tham chiếu</h3><button data-screen="guide"><i class="d-dot" style="background:var(--shell-ink)"></i>Hệ thống thiết kế</button></div>`;
+}
+function markList() {
+  document.querySelectorAll('[data-screen]').forEach((b) => b.classList.toggle('on', b.dataset.screen === current));
+  const s = SCREENS.find((x) => x.id === current);
+  document.getElementById('d-mobile-name').textContent = s ? s.title : 'Hệ thống thiết kế';
+}
+function notes() {
+  const i = SCREENS.findIndex((x) => x.id === current);
+  const s = SCREENS[i];
+  const box = document.getElementById('d-notes');
+  if (!s) { box.innerHTML = `<p class="d-kicker">Tham chiếu</p><h2>Hệ thống thiết kế</h2><p>Màu, chữ, thành phần và biểu tượng dùng trong mọi màn. Bản SVG của trang này nằm cùng thư mục với các màn hình.</p>`; return; }
+  const prev = SCREENS[(i - 1 + SCREENS.length) % SCREENS.length], next = SCREENS[(i + 1) % SCREENS.length];
+  box.innerHTML = `<p class="d-kicker">${s.group} · ${i + 1}/${SCREENS.length}</p><h2>${s.title}</h2><p>${s.note}</p>
+    <div class="d-card"><p class="d-kicker">Điểm chính</p><ul>${s.points.map((p) => `<li>${p}</li>`).join('')}</ul></div>
+    ${s.newPoints ? `<div class="d-card"><p class="d-kicker">Chưa có trong app hiện tại</p><ul>${s.newPoints.map((p) => `<li class="new">${p}</li>`).join('')}</ul></div>` : ''}
+    <div class="d-pager"><button data-screen="${prev.id}">${ic('arrow-left', 16)} ${prev.title}</button><button data-screen="${next.id}">${next.title} ${ic('arrow-right', 16)}</button></div>`;
+}
+
+// Lớp phủ trong máy: chọn chức năng camera, thông báo nhỏ
+function sheet() {
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML = `<div class="ov-sheet"><i class="handle" style="margin-bottom:6px"></i><p class="h3" style="padding:0 4px 4px">Dùng camera để</p>
+    ${[['utensils', 'green', 'Chụp món ăn', 'Biết calo và lời khuyên cho bữa này', 'scan'], ['camera', 'blue', 'Chỉnh dáng khi tập', 'Đếm lần và sửa tư thế squat, lunge, plank', 'coach'], ['scale', 'yellow', 'Ghi cân nặng', 'Chụp màn hình cân hoặc nhập tay', 'progress']].map(([i, c, t, d, go]) => `<button class="ov-item" data-go="${go}"><span class="ch-ic" style="background:var(--${c}-soft);color:var(--${c}-ink);width:46px;height:46px">${ic(i, 22)}</span><span class="grow col"><b style="font-weight:600">${t}</b><span class="xs muted">${d}</span></span>${ic('chevron-right', 18)}</button>`).join('')}
+    <button class="btn ghost" data-act="close">Đóng</button></div>`;
+  ov.addEventListener('click', (e) => { if (e.target === ov) ov.remove(); });
+  app.append(ov);
+}
+let toastTimer;
+function toast(msg) {
+  let t = app.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; app.append(t); }
+  t.innerHTML = `${ic('circle-check', 18)}<span>${msg}</span>`;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.hidden = true), 2200);
+}
+function setTheme(v) {
+  if (v === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = v;
+  try { localStorage.setItem('fc-theme', v); } catch (e) { /* bỏ qua */ }
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.classList.toggle('on', b.dataset.themeSet === v));
+  rerender();
+}
+
+document.addEventListener('click', (e) => {
+  const scr = e.target.closest('[data-screen]');
+  if (scr) { show(scr.dataset.screen); document.getElementById('d-sheet').hidden = true; return; }
+  const th = e.target.closest('[data-theme-set]');
+  if (th) return setTheme(th.dataset.themeSet);
+  const a = e.target.closest('[data-act]');
+  if (a && app.contains(a)) {
+    const v = a.dataset.v;
+    switch (a.dataset.act) {
+      case 'water': S.water = Math.min(8, S.water + 1); rerender(); toast(`Đã ghi 250 ml, tổng ${vn(S.water * .25, 2).replace(/0$/, '')} lít`); break;
+      case 'glass': S.water = +v < S.water ? +v : +v + 1; rerender(); break;
+      case 'toggle': { const id = a.dataset.id; S.done.has(id) ? S.done.delete(id) : S.done.add(id); rerender(); break; }
+      case 'add': S.added.add(a.dataset.id); if (a.dataset.then) { show(a.dataset.then); } else rerender(); toast(`Đã thêm ${DISHES[a.dataset.id].name} vào bữa tối`); break;
+      case 'goal': S.goal = v; rerender(); break;
+      case 'target': S.target = Math.max(45, Math.min(61, S.target + +v)); rerender(); break;
+      case 'mood': S.mood = +v; rerender(); break;
+      case 'rpe': S.rpe = +v; rerender(); break;
+      case 'portion': S.portion = +v; rerender(); break;
+      case 'tg': S[v] = !S[v]; rerender(); break;
+      case 'theme': setTheme(v); break;
+      case 'set': S.set = S.set >= 4 ? 1 : S.set + 1; S.reps = 0; rerender(); toast(`Nghỉ 75 giây rồi vào hiệp ${S.set}`); break;
+      case 'sheet': sheet(); break;
+      case 'close': a.closest('.overlay').remove(); break;
+      case 'join': a.textContent = 'Đã tham gia'; a.style.background = 'var(--green)'; break;
+      case 'toast': if (a.dataset.then) show(a.dataset.then); toast(v); break;
+    }
+    return;
+  }
+  const go = e.target.closest('[data-go]');
+  if (go && app.contains(go)) show(go.dataset.go);
+});
+document.getElementById('d-mobile-open').addEventListener('click', () => (document.getElementById('d-sheet').hidden = false));
+document.getElementById('d-sheet-close').addEventListener('click', () => (document.getElementById('d-sheet').hidden = true));
+document.getElementById('d-sheet').addEventListener('click', (e) => { if (e.target.id === 'd-sheet') e.target.hidden = true; });
+
+// Thu nhỏ điện thoại cho vừa chiều cao cửa sổ
+function fit() {
+  const ph = document.getElementById('d-phone');
+  if (innerWidth <= 760) { ph.style.transform = ''; ph.parentElement.style.height = ''; return; }
+  const k = Math.min(1, (innerHeight - 48) / 866);
+  ph.style.transform = `scale(${k})`;
+  ph.parentElement.style.height = 866 * k + 'px';
+  ph.parentElement.style.width = 412 * k + 'px';
+  ph.style.transformOrigin = 'top left';
+}
+addEventListener('resize', fit);
+addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h && h !== current) show(h); });
+
+// Bộ đếm sống động trên màn đang tập và camera
+setInterval(() => {
+  if (current === 'session') {
+    const r = document.getElementById('rep'), c = document.getElementById('clock');
+    if (S.reps < 12) S.reps++;
+    if (r) { r.textContent = String(S.reps).padStart(2, '0'); r.classList.remove('pop'); void r.offsetWidth; r.classList.add('pop'); }
+    if (c) { const t = 32 + S.reps * 3; c.textContent = `00:${String(t % 60).padStart(2, '0')}`.replace('00:', t >= 60 ? '01:' : '00:'); }
+  }
+  if (current === 'coach') {
+    S.coachReps = S.coachReps >= 15 ? 1 : S.coachReps + 1;
+    const r = document.getElementById('coach-rep');
+    if (r) r.textContent = String(S.coachReps).padStart(2, '0');
+  }
+}, 2400);
+
+if (EXPORT) {
+  document.documentElement.classList.add('exp');
+  document.body.classList.add('exp');
+  const t = new URLSearchParams(location.search).get('theme');
+  if (t) document.documentElement.dataset.theme = t;
+  const box = document.getElementById('export');
+  SCREENS.forEach((s) => box.append(renderScreen(s.id)));
+  const g = document.createElement('div');
+  g.className = 'd-guide';
+  g.id = 's-guide';
+  g.innerHTML = guide();
+  box.append(g);
+} else {
+  let saved = null;
+  try { saved = localStorage.getItem('fc-theme'); } catch (e) { /* bỏ qua */ }
+  if (saved && saved !== 'auto') document.documentElement.dataset.theme = saved;
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.classList.toggle('on', b.dataset.themeSet === (saved || 'auto')));
+  list('d-list');
+  list('d-list-m');
+  hydrate(document.body);
+  show(location.hash.slice(1) || 'home');
+  fit();
+}
+</script>
