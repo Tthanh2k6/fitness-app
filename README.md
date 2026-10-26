@@ -1,58 +1,107 @@
-# FitCoach
+# FitCoach — On-Device AI Pose Correction & Food Classifier Web App
 
-Web app hỗ trợ tự tập luyện: lịch tập theo mục tiêu và thời gian rảnh, camera chỉnh dáng, theo dõi tiến độ và sức khỏe, gợi ý ăn uống theo ngân sách, chụp món ăn để biết calo.
+<div align="center">
+  <p align="center">
+    <img src="./redesign/png/toi/03-trang-chu.png" alt="FitCoach Home Dashboard" width="23%" />
+    <img src="./redesign/png/toi/07-camera-chinh-dang.png" alt="MediaPipe Pose AI Coach" width="23%" />
+    <img src="./redesign/png/toi/11-chup-mon-an.png" alt="MobileNetV3 AI Food Scanner" width="23%" />
+    <img src="./redesign/png/toi/09-bua-an.png" alt="Budget-Aware Nutrition & Meal Planner" width="23%" />
+  </p>
 
-React 19 + Vite + TypeScript + Tailwind CSS 4. Giao diện theo bản thiết kế "Phấn, cao su và đĩa tạ" trong `redesign/` (sáng và tối).
+  <p align="center">
+    <img src="https://img.shields.io/badge/React-19.1-149ECA?style=flat-square&logo=react&logoColor=white" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/MediaPipe_Vision-Pose_%26_MobileNetV3-00F0FF?style=flat-square&logo=google&logoColor=white" alt="MediaPipe Vision" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+    <img src="https://img.shields.io/badge/Vitest-53_Unit_Tests-10B981?style=flat-square&logo=vitest&logoColor=white" alt="Vitest" />
+    <img src="https://img.shields.io/badge/Architecture-100%25_On--Device_Edge_AI-FF6B00?style=flat-square" alt="Edge AI" />
+  </p>
+</div>
 
-## Chạy
+---
 
-```bash
-npm install
-npm run dev      # http://localhost:5173, điện thoại cùng wifi dùng địa chỉ Network
-npm run build
-npm test         # kiểm thử chấm động tác, lịch tập, tiến độ, sức khỏe, dinh dưỡng, thử thách
+## ✨ Overview
+
+**FitCoach (`fitness-app`)** is an offline-first, privacy-preserving fitness and nutrition web application running **two real-time computer vision pipelines directly in the browser via WebAssembly & WebGL (`@mediapipe/tasks-vision`)** with zero cloud GPU cost.
+
+### Three Core Engineering Pillars
+1. **Real-Time AI Pose Coach (`src/ai/pose/`):**
+   - Extracts **33 3D body landmarks** at 30 FPS via `PoseLandmarker`, automatically detects the side of the body facing the camera (`nearSide`), computes joint angles and torso inclination, and overlays a proportional target skeleton calibrated to the user's exact limb lengths.
+   - Runs per-exercise state machines to count repetitions (`reps`) or isometric holds (`hold`), detects form faults (rounded back, knee valgus/over-toe, heel lift, hip sag), and speaks real-time voice corrections via the **Web Speech API (`speechSynthesis`)**.
+2. **In-Browser Food Classifier & Budget Meal Planner (`src/ai/food/` & `training/food/`):**
+   - Uses transfer learning on **`MobileNetV3-Large`** (1,280-D feature embeddings extracted in-browser via `ImageEmbedder` + a custom-trained multinomial logistic regression head exported to `public/models/food-head.json` from the `30VNFoods` dataset) to classify **28 Vietnamese dishes** from camera photos.
+   - Pairs visual recognition with a 50-item nutrition & price database to recommend daily meals within the user's exact daily food budget and generate a one-tap grocery checklist.
+3. **Adaptive Workout Generator & Readiness Engine (`src/logic/`):**
+   - Generates personalized weekly training splits across **120 exercises** (complete with custom-rendered CC0 3D MakeHuman/Blender pose illustrations in `public/poses/`) based on goal (`lose`, `muscle`, `gain`, `health`), experience level, session duration (`15`/`30`/`45`/`60` min), equipment, and post-workout **RPE (`0..3`)** + bio-readiness score (`0..100`).
+
+---
+
+## 🏗️ On-Device AI & Application Architecture
+
+```mermaid
+flowchart LR
+    subgraph Camera["Browser Camera Stream (WebRTC)"]
+        Frames["Video / Photo Frames"]
+    end
+
+    subgraph EdgeAI["On-Device WASM / WebGL AI (@mediapipe/tasks-vision)"]
+        Pose["PoseLandmarker\n(33 Landmarks + Joint-Angle FSM)"]
+        Food["MobileNetV3-Large Embedder\n+ Custom Linear Head (food-head.json)"]
+    end
+
+    subgraph App["React 19 + TypeScript Engine (src/logic/)"]
+        CoachUI["Target Skeleton Overlay\n+ Rep Counter + TTS Coach"]
+        MealUI["Macro / Calorie Estimator\n+ Budget Meal Planner"]
+        Planner["Adaptive Workout Generator\n(RPE & Readiness Feedback)"]
+    end
+
+    Frames --> Pose --> CoachUI
+    Frames --> Food --> MealUI
+    CoachUI --> Planner
 ```
 
-## Cấu trúc
+---
 
-| Thư mục / file | Nội dung |
-| --- | --- |
-| `src/pages/` | Các màn hình, mỗi file một route (xem `src/App.tsx`) |
-| `src/components/` | Thành phần dùng chung: khung trang, thanh điều hướng, bảng chọn, thanh đòn (`Barbell`), ảnh minh hoạ động tác (`Pose`, dự phòng bằng hình người que), hình món ăn (`DishArt`), video hướng dẫn |
-| `src/index.css` | Màu (sáng/tối), font và các lớp giao diện chung, chuyển từ `redesign/src/app.html` |
-| `src/data/` | 120 bài tập, video YouTube cho từng bài, khởi động / giãn cơ, màu nhóm cơ, công thức nấu 12 món |
-| `src/logic/` | Sinh lịch tập, tự điều chỉnh độ nặng theo cảm nhận (`adjust.ts`), chỉ số trong ngày (`daily.ts`), điểm sẵn sàng (`health.ts`), kỷ lục (`records.ts`), gợi ý món (`meals.ts`), thử thách và huy hiệu (`challenges.ts`), dữ liệu mẫu để trình diễn (`demo.ts`) |
-| `src/profile.ts`, `src/store.ts` | Hồ sơ và nhật ký (tập, cân nặng, số đo, bữa ăn, nước, bước chân, giấc ngủ, nhịp tim, thử thách), lưu trên máy (localStorage) |
-| `src/theme.ts` | Giao diện sáng / tối / theo hệ thống |
-| `src/ai/pose/` | AI chỉnh dáng: MediaPipe Pose, tính góc khớp, đếm lần, bắt lỗi, khung tư thế chuẩn |
-| `src/ai/food/` | AI nhận diện món: MobileNetV3 + lớp phân loại tự huấn luyện, bảng dinh dưỡng, lời khuyên |
-| `training/food/` | Script tải dữ liệu và huấn luyện lớp phân loại món ăn |
-| `tools/human/`, `public/poses/` | Người mẫu 3D (MakeHuman, CC0) đặt vào từng tư thế và render thành ảnh minh hoạ động tác, xem `tools/human/README.md` |
-| `redesign/` | Bản thiết kế: demo HTML, SVG cho Figma, ảnh PNG từng màn |
-| `docs/food-research.md` | Bộ dữ liệu, giấy phép, nguồn số liệu dinh dưỡng |
+## 🚀 Quickstart
 
-## Màn hình
+**Prerequisites:** Node.js **20+** and `npm`.
 
-| Route | Màn |
-| --- | --- |
-| `/welcome` | Chào mừng |
-| `/auth` | Đăng ký / đăng nhập (chưa có máy chủ, tài khoản lưu trên máy) |
-| `/setup` | 7 bước: hồ sơ, mục tiêu + cân nặng mong muốn, vùng tập, trình độ, thời gian, nơi tập, tiền ăn (`?step=N&from=profile` để sửa từng bước) |
-| `/home` | Trang chủ: thanh đòn chỉ số ngày (calo đốt, bước, phút tập, nước), buổi tập hôm nay, giấc ngủ, nhịp tim, cân nặng, bữa ăn, lời nhắc HLV |
-| `/train` | Tập luyện: Hôm nay / Lịch tuần / Thư viện (`?tab=today`, `week`, `library`) |
-| `/exercise/:id` | Chi tiết bài tập, video, cơ tác động, bài thay thế |
-| `/workout` | Đang tập: đếm lần theo nhịp có giọng đọc, đếm giờ, nghỉ giữa hiệp (`?ex=<id>` để tập một bài) |
-| `/stretch` | Khởi động / giãn cơ có đếm giờ từng động tác |
-| `/coach`, `/coach/:id` | Chọn bài và camera chỉnh dáng: góc khớp, điểm dáng chuẩn |
-| `/done` | Tổng kết buổi tập: kỷ lục mới, cảm nhận (tự điều chỉnh buổi sau), gợi ý bữa ăn |
-| `/meals` | Bữa ăn: calo còn lại, đạm / tinh bột / chất béo, tiền đã chi, dòng thời gian bữa ăn, gợi ý món, nước, danh sách đi chợ |
-| `/dish/:id` | Chi tiết món: công thức, nguyên liệu, thêm vào danh sách đi chợ |
-| `/scan` | Chụp món ăn |
-| `/progress` | Tiến độ: cân nặng, lịch tháng, nhóm cơ trong tuần, số đo, kỷ lục |
-| `/health` | Sức khỏe: điểm sẵn sàng, giấc ngủ, nhịp tim nghỉ, nước, cảm nhận |
-| `/challenges` | Thử thách và huy hiệu |
-| `/profile` | Hồ sơ, cài đặt, giao diện sáng/tối, dữ liệu mẫu để trình diễn |
+```powershell
+git clone https://github.com/Tthanh2k6/fitness-app.git
+cd fitness-app
+npm install
+npm run dev
+```
 
-Bước chân, giấc ngủ và nhịp tim nhập tay (ứng dụng web chưa đọc được cảm biến điện thoại). Camera chỉ chạy trên `localhost` hoặc https. AI chạy hoàn toàn trên máy người dùng, không gửi ảnh đi đâu.
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Start Vite development server (`http://localhost:5173`) |
+| `npm run build` | Type-check and build production bundle (`dist/`) |
+| `npm test` | Run **53 unit tests** (Vitest) covering pose grading, workout scheduling, readiness, nutrition & food classification |
+| `npm run lint` | Run ESLint static analysis |
 
-Bản đồ cơ ở bước chọn vùng tập dùng thư viện [react-body-highlighter](https://github.com/giavinh79/react-body-highlighter) (MIT). Mã giao diện trước khi thiết kế lại được lưu ở `_backup/`.
+### Retraining the Custom Food Classifier Head (`training/food/`)
+```powershell
+cd training/food
+pip install -r requirements.txt
+python train.py
+```
+
+---
+
+## 📂 Repository Structure
+
+| Path | Description |
+| :--- | :--- |
+| [`src/ai/pose/`](src/ai/pose/) | 33-keypoint MediaPipe Pose wrapper, joint-angle geometry, fault detectors & proportional target skeleton renderer |
+| [`src/ai/food/`](src/ai/food/) | In-browser `MobileNetV3-Large` feature extractor + dot-product softmax classifier (`public/models/food-head.json`) |
+| [`src/logic/`](src/logic/) | Workout split generator, RPE auto-progression (`adjust.ts`), readiness score (`health.ts`), budget meal planner (`meals.ts`) |
+| [`src/data/`](src/data/) | 120 exercises, muscle heatmaps, warm-up/stretch routines & 50-item nutrition/price catalog |
+| [`src/pages/`](src/pages/) | 16 application routes (`/home`, `/train`, `/workout`, `/coach`, `/meals`, `/scan`, `/progress`, `/health`, `/challenges`, `/profile`) |
+| [`training/food/`](training/food/) | Python pipeline to download `30VNFoods`, extract embeddings, train the classifier & export `food-head.json` |
+| [`tools/human/`](tools/human/) | Blender Cycles + MakeHuman (MPFB) automation scripts that render 72 `.webp` 3D exercise illustrations |
+| [`redesign/`](redesign/) | Complete light & dark UI design system (`Chalk, Rubber & Iron Plates`), HTML prototypes, Figma SVGs & PNG screens |
+
+---
+
+**Author:** **Trung Thanh Tran** (*Trần Trung Thành*) · [GitHub `@Tthanh2k6`](https://github.com/Tthanh2k6) · [Upwork Profile](https://www.upwork.com/freelancers/~01ee7c2348cb4b62fe)
